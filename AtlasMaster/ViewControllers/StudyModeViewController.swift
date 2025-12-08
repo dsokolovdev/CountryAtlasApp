@@ -13,9 +13,22 @@ final class StudyModeViewController: UIViewController {
     var glassView: UIView!
     var studyModeSegmentedControl: UISegmentedControl!
     var onSelectionConfirmed: ((Region, StudyMode) -> Void)?
+    
     var selectedModeindex = 0
-    let continents = AtlasModel().continents
     var initialRegion: Region = .world
+    
+    private let world: World
+    
+    init(world: World, initialConfig: StudyConfiguration) {
+        self.world = world
+        self.selectedModeindex = initialConfig.mode.rawValue
+        self.initialRegion = initialConfig.region
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,7 +51,7 @@ extension StudyModeViewController {
         
         // Кнопка "Done" (галочка)
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .close,
+            barButtonSystemItem: .done,
             target: self,
             action: #selector(doneTapped)
         )
@@ -142,7 +155,7 @@ extension StudyModeViewController {
         glassView.layer.shadowOffset = .zero
         glassView.translatesAutoresizingMaskIntoConstraints = false
         
-        continentPicker = ContinentPickerView()
+        continentPicker = ContinentPickerView(continents: world.continents)
         continentPicker.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(glassView)
@@ -168,7 +181,7 @@ extension StudyModeViewController {
 
 //MARK: - Actions
 extension StudyModeViewController {
-
+    //Confirm selection on segmented control and picker
     @objc private func doneTapped() {
         let continent = continentPicker.selectedContinent
         let index = studyModeSegmentedControl.selectedSegmentIndex
@@ -187,6 +200,7 @@ extension StudyModeViewController {
         setColors()
     }
     
+    //Change color of segmented control base on selection
     func setColors() {
         let currentIndex = studyModeSegmentedControl.selectedSegmentIndex
         let size: CGFloat = 15
@@ -199,6 +213,7 @@ extension StudyModeViewController {
         studyModeSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
     }
     
+    //When open studymodeview set picker selected region to continues from already selected one
     func selectRegion(_ region: Region) {
         let name: String
         switch region {

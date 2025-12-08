@@ -11,9 +11,14 @@ class AtlasViewController: UIViewController {
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
     private var currentConfig = StudyConfiguration(mode: .learning, region: .world)
+    private var world: World?
+    
+    let service = CountryService()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadCountries()
+        
         setupnavigationBar()
         setupNavigationBarSegmentedControl()
         
@@ -28,6 +33,22 @@ class AtlasViewController: UIViewController {
             bottom: 0,
             trailing: constant
         )
+    }
+}
+
+extension AtlasViewController {
+    func loadCountries() {
+        service.fetchAllCountries { apiCountries in
+            let world = self.service.buildAtlas(from: apiCountries)
+            self.world = world
+            
+            for (index,continent) in world.continents.enumerated() {
+                print("******", index + 1, continent.name)
+                for ((index),country) in continent.countries.enumerated() {
+                    print("\(index + 1): \(country.name) - \(country.capital)")
+                }
+            }
+        }
     }
 }
 
@@ -104,7 +125,12 @@ extension AtlasViewController {
 //    }
 
     @objc func modeButtonTapped() {
-        let vc = StudyModeViewController()
+        guard let world = world else {
+            // страны ещё не загрузились — можно показать alert или просто return
+            return
+        }
+        
+        let vc = StudyModeViewController(world: world, initialConfig: currentConfig)
         let nav = UINavigationController(rootViewController: vc)
         
         vc.selectedModeindex = currentConfig.mode.rawValue
@@ -129,6 +155,7 @@ extension AtlasViewController {
         // Perform actions based on the selected segment
     }
     
+    
     private func updateUIForConfig() {
         modeButton.image = currentConfig.mode == .learning ? UIImage(systemName: "book") : UIImage(systemName: "person.fill.questionmark")
         switch currentConfig.mode {
@@ -141,12 +168,13 @@ extension AtlasViewController {
         }
     }
     
-    func currentContinentName() -> String? {
-        switch currentConfig.region {
-        case .world: return nil
-        case .continent(let name): return name
-        }
-    }
+//    //Get selected continent name
+//    func currentContinentName() -> String? {
+//        switch currentConfig.region {
+//        case .world: return nil
+//        case .continent(let name): return name
+//        }
+//    }
 
 }
 

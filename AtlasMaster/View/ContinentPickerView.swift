@@ -10,19 +10,30 @@ import UIKit
 class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate {
     
     private let picker = UIPickerView()
-    let continents = AtlasModel().continents
+    var continents: [Continent]
     var selectedContinent: String!
     var currentIndex: Int = 0
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
-    }
+//    override init(frame: CGRect) {
+//        super.init(frame: frame)
+//        setup()
+//    }
+    
+    // главный init — сюда передаём континенты
+        init(continents: [Continent]) {
+            self.continents = continents
+            super.init(frame: .zero)
+            setup()
+        }
     
     required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
+        fatalError("init(coder:) has not been implemented")
     }
+    
+//    required init?(coder: NSCoder) {
+//        super.init(coder: coder)
+//        setup()
+//    }
     
     private func setup() {
         backgroundColor = .clear
@@ -70,7 +81,7 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
         let label = UILabel()
         label.textAlignment = .center
         label.textColor = .label
-        label.text = continents[row]
+        label.text = continents[row].name
         //let isSelected = row == selectedRow
         
         label.font = UIFont.systemFont(ofSize: 22, weight: .regular)
@@ -82,20 +93,21 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         currentIndex =  row
-        selectedContinent = continents[row]
+        selectedContinent = continents[row].name
         //pickerView.reloadComponent(component)
     }
     
+    //MARK: - Helpers
     /// Выбрать континент по индексу
     func selectContinent(at index: Int) {
         guard index >= 0 && index < continents.count else { return }
         picker.selectRow(index, inComponent: 0, animated: false)
-        selectedContinent = continents[index]
+        selectedContinent = continents[index].name
     }
     
     /// Выбрать континент по имени
     func selectContinent(named name: String) {
-        if let index = continents.firstIndex(of: name) {
+        if let index = continents.firstIndex(where: { $0.name == name }) {
             selectContinent(at: index)
         }
     }
