@@ -15,8 +15,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let scene = (scene as? UIWindowScene) else { return }
         
+        let model = AtlasModel()
         //Create root view controller
-        let rootVC = AtlasViewController()
+        let rootVC = AtlasViewController(model: model)
         let navigationController = UINavigationController(rootViewController: rootVC)
         
         //Create and attash window

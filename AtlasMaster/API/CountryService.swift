@@ -6,7 +6,7 @@
 //
 import UIKit
 
-final class CountryService {
+struct CountryService {
     
     func fetchAllCountries(completion: @escaping ([CountryAPI]) -> Void) {
             let url = URL(string:"https://restcountries.com/v3.1/all?fields=name,capital,region,flag")!

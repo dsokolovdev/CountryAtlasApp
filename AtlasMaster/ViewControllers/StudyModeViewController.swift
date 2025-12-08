@@ -12,6 +12,7 @@ final class StudyModeViewController: UIViewController {
     var continentPicker: ContinentPickerView!
     var glassView: UIView!
     var studyModeSegmentedControl: UISegmentedControl!
+    
     var onSelectionConfirmed: ((Region, StudyMode) -> Void)?
     
     var selectedModeindex = 0

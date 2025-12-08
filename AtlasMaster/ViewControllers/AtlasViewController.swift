@@ -7,28 +7,33 @@
 
 import UIKit
 
-class AtlasViewController: UIViewController {
-    private let dataStore = DataStore()
+final class AtlasViewController: UIViewController {
+    
+    private let atlasModel: AtlasModel
     
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
-    private var currentConfig = StudyConfiguration(mode: .learning, region: .world)
-    private var world: World?
+
+    init(model: AtlasModel) {
+        self.atlasModel = model
+        super.init(nibName: nil, bundle: nil)
+    }
     
-    
-    let service = CountryService()
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         //Load saved studyConfigs: region, mode
-        if let savedConfig = dataStore.loadUserConfig() {
-            currentConfig = savedConfig
+        if let savedConfig = atlasModel.dataStore.loadUserConfig() {
+            atlasModel.currentConfig = savedConfig
         }
-        if let savedWorld = dataStore.loadWorldData() {
-            world = savedWorld
+        if let savedWorld = atlasModel.dataStore.loadWorldData() {
+            atlasModel.world = savedWorld
         } else {
-            loadCountriesFromAPI()
+            atlasModel.loadCountriesFromAPI()
         }
         
         setupnavigationBar()
@@ -45,27 +50,6 @@ class AtlasViewController: UIViewController {
             bottom: 0,
             trailing: constant
         )
-    }
-}
-
-extension AtlasViewController {
-    func loadCountriesFromAPI() {
-        service.fetchAllCountries { apiCountries in
-            let world = self.service.buildAtlas(from: apiCountries)
-            
-            DispatchQueue.main.async {
-                self.world = world
-                self.dataStore.saveWorldData(world)
-            }
-            
-            //Print
-            for (index,continent) in world.continents.enumerated() {
-                print("******", index + 1, continent.name)
-                for ((index),country) in continent.countries.enumerated() {
-                    print("\(index + 1): \(country.name) - \(country.capital)")
-                }
-            }
-        }
     }
 }
 
@@ -99,13 +83,13 @@ extension AtlasViewController {
         //view.addSubview(segmentedControl)
         //navigationItem.titleView = view
         
-//        NSLayoutConstraint.activate([
-//            view.widthAnchor.constraint(equalToConstant: 140),
-//            segmentedControl.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-//            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-//
-//        ])
+        //        NSLayoutConstraint.activate([
+        //            view.widthAnchor.constraint(equalToConstant: 140),
+        //            segmentedControl.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+        //            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+        //            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        //
+        //        ])
         
         // Set the segmented control as the titleView of the navigation item
         navigationItem.titleView = segmentedControl
@@ -135,32 +119,30 @@ extension AtlasViewController {
         
     }
     
-//    @objc func modeButtonTapped(){
-//        let vc = ModeViewController()
-//        vc.modalPresentationStyle = .pageSheet
-//        present(vc, animated: true)
-//    }
-
+    //    @objc func modeButtonTapped(){
+    //        let vc = ModeViewController()
+    //        vc.modalPresentationStyle = .pageSheet
+    //        present(vc, animated: true)
+    //    }
+    
     @objc func modeButtonTapped() {
-        guard let world = world else { return }
+        guard let world = atlasModel.world else { return }
         
         //Add "World" first menu item into picker
         var extended = world.continents
         extended.insert(Continent(name: "World", countries: []), at: 0)
         
-        let modifiedWorld = World(continents: extended)
-        
-        let vc = StudyModeViewController(world: world, initialConfig: currentConfig)
+        let vc = StudyModeViewController(world: world, initialConfig: atlasModel.currentConfig)
         let nav = UINavigationController(rootViewController: vc)
         
-        vc.selectedModeindex = currentConfig.mode.rawValue
-        vc.initialRegion = currentConfig.region
+        vc.selectedModeindex = atlasModel.currentConfig.mode.rawValue
+        vc.initialRegion = atlasModel.currentConfig.region
         
         vc.onSelectionConfirmed = { [weak self] region, mode in
-            self?.currentConfig.region = region
-            self?.currentConfig.mode = mode
+            self?.atlasModel.currentConfig.region = region
+            self?.atlasModel.currentConfig.mode = mode
             self?.updateUIForConfig()
-            self?.dataStore.saveUserConfig(self?.currentConfig ?? StudyConfiguration(mode: .learning, region: .world))
+            self?.atlasModel.dataStore.saveUserConfig(self?.atlasModel.currentConfig ?? StudyConfiguration(mode: .learning, region: .world))
         }
         
         if let sheet = nav.sheetPresentationController {
@@ -178,8 +160,8 @@ extension AtlasViewController {
     
     
     private func updateUIForConfig() {
-        modeButton.image = currentConfig.mode == .learning ? UIImage(systemName: "book") : UIImage(systemName: "person.fill.questionmark")
-        switch currentConfig.mode {
+        modeButton.image = atlasModel.currentConfig.mode == .learning ? UIImage(systemName: "book") : UIImage(systemName: "person.fill.questionmark")
+        switch atlasModel.currentConfig.mode {
         case .learning:
             // включаем «подсказки», без счёта
             break
@@ -188,14 +170,4 @@ extension AtlasViewController {
             break
         }
     }
-    
-//    //Get selected continent name
-//    func currentContinentName() -> String? {
-//        switch currentConfig.region {
-//        case .world: return nil
-//        case .continent(let name): return name
-//        }
-//    }
-
 }
-
