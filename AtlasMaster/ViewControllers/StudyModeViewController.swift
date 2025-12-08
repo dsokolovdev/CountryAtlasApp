@@ -33,6 +33,8 @@ final class StudyModeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
+        
         setupNavigationBar()
         setupContinentPicker()
         setupStudyMode()
@@ -155,7 +157,11 @@ extension StudyModeViewController {
         glassView.layer.shadowOffset = .zero
         glassView.translatesAutoresizingMaskIntoConstraints = false
         
-        continentPicker = ContinentPickerView(continents: world.continents)
+        var extended = world.continents
+        extended.insert(Continent(name: "World", countries: []), at: 0)
+        let modifiedWorld = World(continents: extended)
+        
+        continentPicker = ContinentPickerView(continents: modifiedWorld.continents)
         continentPicker.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(glassView)

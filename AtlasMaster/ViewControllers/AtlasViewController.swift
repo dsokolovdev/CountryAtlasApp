@@ -8,16 +8,28 @@
 import UIKit
 
 class AtlasViewController: UIViewController {
+    private let dataStore = DataStore()
+    
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
     private var currentConfig = StudyConfiguration(mode: .learning, region: .world)
     private var world: World?
     
+    
     let service = CountryService()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadCountries()
+        
+        //Load saved studyConfigs: region, mode
+        if let savedConfig = dataStore.loadUserConfig() {
+            currentConfig = savedConfig
+        }
+        if let savedWorld = dataStore.loadWorldData() {
+            world = savedWorld
+        } else {
+            loadCountriesFromAPI()
+        }
         
         setupnavigationBar()
         setupNavigationBarSegmentedControl()
@@ -37,11 +49,16 @@ class AtlasViewController: UIViewController {
 }
 
 extension AtlasViewController {
-    func loadCountries() {
+    func loadCountriesFromAPI() {
         service.fetchAllCountries { apiCountries in
             let world = self.service.buildAtlas(from: apiCountries)
-            self.world = world
             
+            DispatchQueue.main.async {
+                self.world = world
+                self.dataStore.saveWorldData(world)
+            }
+            
+            //Print
             for (index,continent) in world.continents.enumerated() {
                 print("******", index + 1, continent.name)
                 for ((index),country) in continent.countries.enumerated() {
@@ -125,10 +142,13 @@ extension AtlasViewController {
 //    }
 
     @objc func modeButtonTapped() {
-        guard let world = world else {
-            // страны ещё не загрузились — можно показать alert или просто return
-            return
-        }
+        guard let world = world else { return }
+        
+        //Add "World" first menu item into picker
+        var extended = world.continents
+        extended.insert(Continent(name: "World", countries: []), at: 0)
+        
+        let modifiedWorld = World(continents: extended)
         
         let vc = StudyModeViewController(world: world, initialConfig: currentConfig)
         let nav = UINavigationController(rootViewController: vc)
@@ -140,6 +160,7 @@ extension AtlasViewController {
             self?.currentConfig.region = region
             self?.currentConfig.mode = mode
             self?.updateUIForConfig()
+            self?.dataStore.saveUserConfig(self?.currentConfig ?? StudyConfiguration(mode: .learning, region: .world))
         }
         
         if let sheet = nav.sheetPresentationController {

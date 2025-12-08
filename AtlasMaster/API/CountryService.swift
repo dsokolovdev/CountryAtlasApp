@@ -6,70 +6,6 @@
 //
 import UIKit
 
-//struct AtlasModel {
-//    let continents = ["World", "Africa", "Asia", "Europe", "North America", "South America", "Oceania"]
-//    let world = World(continents: [])
-//        
-//}
-
-//Selection in StudyModeViewController: mode - segmented control, region - picker
-struct StudyConfiguration {
-    var mode: StudyMode
-    var region: Region
-}
-//segmented control data
-enum StudyMode: Int {
-    case learning
-    case testing
-}
-
-//picker data - Picker Continent
-enum Region {
-    case world
-    case continent(String)
-}
-
-//Regions and Countries
-struct World {
-    let continents: [Continent]
-    
-    init(continents: [Continent]) {
-        self.continents = continents
-    }
-    
-    init() {
-        self.continents = []
-    }
-}
-
-struct Continent: Equatable {
-    let name: String
-    let countries: [Country]
-}
-
-struct Country: Comparable {
-    let name: String
-    let capital: String
-    let flag: String
-    
-    static func < (lhs: Country, rhs: Country) -> Bool {
-        lhs.name < rhs.name
-    }
-}
-
-// DTO под JSON с restcountries
-struct CountryAPI: Decodable {
-    struct Name: Decodable {
-        let common: String
-    }
-    
-    let name: Name
-    let capital: [String]?
-    let region: String?
-    let flag: String?
-}
-
-
 final class CountryService {
     
     func fetchAllCountries(completion: @escaping ([CountryAPI]) -> Void) {
@@ -116,16 +52,4 @@ final class CountryService {
         return World(continents: continents)
     }
 }
-
-
-//enum Region: String {
-//    case africa = "Africa"
-//    case asia = "Asia"
-//    case europe = "Europe"
-//    case northAmerica = "North America"
-//    case southAmerica = "South America"
-//    case oceania = "Oceania"
-//    case world = "World"
-//}
-
 
