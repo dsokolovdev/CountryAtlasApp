@@ -1,3 +1,4 @@
+
 //
 //  ViewController.swift
 //  AtlasMaster
@@ -7,9 +8,10 @@
 
 import UIKit
 
-final class AtlasViewController: UIViewController {
+final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     
     private let atlasModel: AtlasModel
+    private var collectionView: UICollectionView!
     
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
@@ -27,17 +29,25 @@ final class AtlasViewController: UIViewController {
         super.viewDidLoad()
         
         //Load saved studyConfigs: region, mode
-        if let savedConfig = atlasModel.dataStore.loadUserConfig() {
-            atlasModel.currentConfig = savedConfig
-        }
-        if let savedWorld = atlasModel.dataStore.loadWorldData() {
-            atlasModel.world = savedWorld
-        } else {
-            atlasModel.loadCountriesFromAPI()
-        }
+//        if let savedConfig = atlasModel.dataStore.loadUserConfig() {
+//            atlasModel.currentConfig = savedConfig
+//        }
+//        if let savedWorld = atlasModel.dataStore.loadWorldData() {
+//            atlasModel.world = savedWorld
+//        } else {
+//            atlasModel.loadCountriesFromAPI()
+//        }
+        atlasModel.loadCountriesFromAPI()
         
         setupnavigationBar()
-        setupNavigationBarSegmentedControl()
+        //setupNavigationBarSegmentedControl()
+        setupCollectionView()
+        
+        atlasModel.onWorldUpdated = { [weak self] in
+            DispatchQueue.main.async {
+                self?.collectionView.reloadData()
+            }
+        }
         
         title = "AtlasMaster"
         view.backgroundColor = .systemBackground
@@ -55,7 +65,7 @@ final class AtlasViewController: UIViewController {
 
 //MARK: - Setup UI
 extension AtlasViewController {
-    
+    //MARK: - Setup SegmentedControl
     func setupNavigationBarSegmentedControl() {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -109,6 +119,80 @@ extension AtlasViewController {
         navigationItem.leftBarButtonItem = settingsButton
         navigationItem.rightBarButtonItem = modeButton
     }
+    
+    //MARK: - Setup CollectionView
+    func setupCollectionViewLayout() -> UICollectionViewLayout {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(140))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(140))
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 6
+        section.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 0, bottom: 40, trailing: 0)
+        
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(28))
+        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .topLeading)
+        
+        //header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+        
+        let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(30))
+        let footer = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottomTrailing)
+        
+        section.boundarySupplementaryItems = [header]
+        
+        let layout = UICollectionViewCompositionalLayout(section: section)
+        //layout.configuration.interSectionSpacing = 40
+        
+        return layout
+    }
+    
+    func setupCollectionView() {
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: setupCollectionViewLayout())
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.backgroundColor = .systemBackground
+        
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        
+        collectionView.register(CountryCell.self, forCellWithReuseIdentifier: "CountryCell")
+        collectionView.register(HeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: HeaderView.reuseId)
+        collectionView.register(FooterView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: FooterView.reuseId)
+        
+        view.addSubview(collectionView)
+        
+        NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+    
+//    func setupCollectionView() {
+//              let layout = UICollectionViewFlowLayout()
+//              layout.minimumLineSpacing = 8
+//              layout.itemSize = CGSize(width: view.bounds.width, height: 100)
+//
+//              collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+//              collectionView.translatesAutoresizingMaskIntoConstraints = false
+//              collectionView.backgroundColor = .systemBackground
+//
+//              collectionView.dataSource = self
+//              collectionView.delegate = self
+//
+//              collectionView.register(CountryCell.self, forCellWithReuseIdentifier: "CountryCell")
+//
+//              view.addSubview(collectionView)
+//
+//              NSLayoutConstraint.activate([
+//                  collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+//                  collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//                  collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//                  collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+//              ])
+//          }
     
 }
 
@@ -170,4 +254,53 @@ extension AtlasViewController {
             break
         }
     }
+}
+//MARK: - CollectionView Delegate
+extension AtlasViewController: UICollectionViewDataSource {
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return atlasModel.world?.continents.count ?? 0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+       // let countries = atlasModel.world?.continents.flatMap { $0.countries }.count ?? 0
+        let countries = atlasModel.world?.continents[section].countries.count ?? 0
+        return countries
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CountryCell", for: indexPath) as! CountryCell
+        
+        //let allCountries = atlasModel.world?.continents.flatMap { $0.countries } ?? []
+        let continents = atlasModel.world?.continents[indexPath.section]
+        let country = continents?.countries[indexPath.item]
+        
+        cell.configure(index: indexPath.item + 1, flag: country?.flag ?? "undefined", name: country?.name ?? "undefined", capital: country?.capital ?? "undefined")
+        
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let sectionName = atlasModel.world?.continents[indexPath.section].name ?? "Unknown"
+        let count = atlasModel.world?.continents[indexPath.section].countries.count ?? 0
+        
+        if kind == UICollectionView.elementKindSectionHeader {
+            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HeaderView.reuseId, for: indexPath) as! HeaderView
+            header.titleLabel.text = sectionName
+            header.countLabel.text = "Countries: \(count)"
+            return header
+        }
+        
+        
+        if kind == UICollectionView.elementKindSectionFooter {
+            let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: FooterView.reuseId, for: indexPath) as! FooterView
+            footer.configure(count: count)
+            return footer
+        }
+        
+        
+        fatalError("Unexpected supplementary kind: \(kind)")
+    }
+    
+    
 }

@@ -9,6 +9,7 @@ import UIKit
 final class AtlasModel {
     var currentConfig = StudyConfiguration(mode: .learning, region: .world)
     var world: World?
+    var onWorldUpdated: (() -> Void)?
     
     private let service = CountryService()
     let dataStore = DataStore()
@@ -22,6 +23,7 @@ final class AtlasModel {
             DispatchQueue.main.async {
                 self.world = world
                 self.dataStore.saveWorldData(world)
+                self.onWorldUpdated?()
             }
             
             //Print
