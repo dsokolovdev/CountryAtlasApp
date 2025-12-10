@@ -15,6 +15,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
+    private var studyProgressSegmentedControl: UISegmentedControl!
 
     init(model: AtlasModel) {
         self.atlasModel = model
@@ -27,6 +28,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.isToolbarHidden = false
         
         //Load saved studyConfigs: region, mode
 //        if let savedConfig = atlasModel.dataStore.loadUserConfig() {
@@ -40,6 +42,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         atlasModel.loadCountriesFromAPI()
         
         setupnavigationBar()
+        setupBottomBar()
         //setupNavigationBarSegmentedControl()
         setupCollectionView()
         
@@ -138,7 +141,7 @@ extension AtlasViewController {
         //header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         
         let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(30))
-        let footer = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottomTrailing)
+       // let footer = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottomTrailing)
         
         section.boundarySupplementaryItems = [header]
         
@@ -168,6 +171,38 @@ extension AtlasViewController {
             collectionView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+    }
+    
+    func setupBottomBar() {
+        studyProgressSegmentedControl = UISegmentedControl()
+        let toLearnSegment = UIImage(systemName: "lightbulb",  withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+        let learnedSegment = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+
+        studyProgressSegmentedControl = UISegmentedControl(items: [toLearnSegment!, learnedSegment!])
+        
+        studyProgressSegmentedControl.subviews.forEach {
+            $0.backgroundColor = .white
+        }
+//        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 0)
+//        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 1)
+        studyProgressSegmentedControl.selectedSegmentTintColor = .systemGroupedBackground
+        studyProgressSegmentedControl.autoresizingMask = [.flexibleTopMargin, .flexibleBottomMargin, .flexibleWidth]
+    
+        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
+        
+        studyProgressSegmentedControl.selectedSegmentIndex = 0
+        studyProgressSegmentedControl.widthAnchor.constraint(equalToConstant: 140).isActive = true
+        studyProgressSegmentedControl.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        
+        let segmentsItem = UIBarButtonItem(customView: studyProgressSegmentedControl)
+        
+        let searchButtton = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchTapped))
+        let space = UIBarButtonItem.flexibleSpace()
+        
+        
+        toolbarItems = [segmentsItem, space, searchButtton]
+        
+        updateProgressSgControlColors()
     }
     
 //    func setupCollectionView() {
@@ -242,6 +277,19 @@ extension AtlasViewController {
         // Perform actions based on the selected segment
     }
     
+    @objc func progressModeChanged(_ sender: UISegmentedControl) {
+        let selectedIndex = sender.selectedSegmentIndex
+        print("Selected segment index: \(selectedIndex)")
+        // Perform actions based on the selected segment
+        
+        updateProgressSgControlColors()
+    }
+    
+    
+    @objc func searchTapped() {
+        print("Search tapped")
+    }
+    
     
     private func updateUIForConfig() {
         modeButton.image = atlasModel.currentConfig.mode == .learning ? UIImage(systemName: "book") : UIImage(systemName: "person.fill.questionmark")
@@ -253,6 +301,20 @@ extension AtlasViewController {
             // включаем «вопрос/ответ», считаем ошибки
             break
         }
+    }
+    
+    func updateProgressSgControlColors() {
+        let index = studyProgressSegmentedControl.selectedSegmentIndex
+        let activeToLearnColor = UIColor.systemYellow
+        let activeLearnedColor = UIColor.systemGreen
+        let activeColor = index == 0 ? activeToLearnColor : activeLearnedColor
+        let inactiveColor = UIColor.tertiaryLabel
+        let size: CGFloat = 16 * scaleFactor
+        let activeFont = UIFont.systemFont(ofSize: size, weight: .bold)
+        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .semibold)
+        
+        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
+        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
     }
 }
 //MARK: - CollectionView Delegate
