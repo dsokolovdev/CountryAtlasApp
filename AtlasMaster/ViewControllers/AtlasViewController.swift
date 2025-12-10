@@ -12,6 +12,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     
     private let atlasModel: AtlasModel
     private var collectionView: UICollectionView!
+    //var onSegmentChanged: ((Int) -> Int)
     
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
@@ -31,15 +32,8 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         navigationController?.isToolbarHidden = false
         
         //Load saved studyConfigs: region, mode
-//        if let savedConfig = atlasModel.dataStore.loadUserConfig() {
-//            atlasModel.currentConfig = savedConfig
-//        }
-//        if let savedWorld = atlasModel.dataStore.loadWorldData() {
-//            atlasModel.world = savedWorld
-//        } else {
-//            atlasModel.loadCountriesFromAPI()
-//        }
-        atlasModel.loadCountriesFromAPI()
+        atlasModel.loadUserConfiguration()
+        atlasModel.loadEntireWorlddData()
         
         setupnavigationBar()
         setupBottomBar()
@@ -49,6 +43,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         atlasModel.onWorldUpdated = { [weak self] in
             DispatchQueue.main.async {
                 self?.collectionView.reloadData()
+                //self?.applyLearningFilter()
             }
         }
         
@@ -140,7 +135,7 @@ extension AtlasViewController {
         
         //header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         
-        let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(30))
+       // let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(30))
        // let footer = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottomTrailing)
         
         section.boundarySupplementaryItems = [header]
@@ -159,7 +154,7 @@ extension AtlasViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         
-        collectionView.register(CountryCell.self, forCellWithReuseIdentifier: "CountryCell")
+        collectionView.register(CountryCell.self, forCellWithReuseIdentifier: CountryCell.reusedId)
         collectionView.register(HeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: HeaderView.reuseId)
         collectionView.register(FooterView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: FooterView.reuseId)
         
@@ -173,36 +168,89 @@ extension AtlasViewController {
         ])
     }
     
-    func setupBottomBar() {
-        studyProgressSegmentedControl = UISegmentedControl()
-        let toLearnSegment = UIImage(systemName: "lightbulb",  withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let learnedSegment = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-
-        studyProgressSegmentedControl = UISegmentedControl(items: [toLearnSegment!, learnedSegment!])
-        
-        studyProgressSegmentedControl.subviews.forEach {
-            $0.backgroundColor = .white
-        }
-//        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 0)
-//        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 1)
-        studyProgressSegmentedControl.selectedSegmentTintColor = .systemGroupedBackground
-        studyProgressSegmentedControl.autoresizingMask = [.flexibleTopMargin, .flexibleBottomMargin, .flexibleWidth]
+//    func setupBottomBar() {
+//        studyProgressSegmentedControl = UISegmentedControl()
+//        let toLearnSegment = UIImage(systemName: "lightbulb",  withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+//        let learnedSegment = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+//
+//        studyProgressSegmentedControl = UISegmentedControl(items: [toLearnSegment!, learnedSegment!])
+//        
+//        studyProgressSegmentedControl.subviews.forEach {
+//            $0.backgroundColor = .white
+//        }
+////        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 0)
+////        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 1)
+//        studyProgressSegmentedControl.selectedSegmentTintColor = .systemGroupedBackground
+//        studyProgressSegmentedControl.autoresizingMask = [.flexibleTopMargin, .flexibleBottomMargin, .flexibleWidth]
+//    
+//        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
+//        
+//        studyProgressSegmentedControl.selectedSegmentIndex = 0
+//        studyProgressSegmentedControl.widthAnchor.constraint(equalToConstant: 140).isActive = true
+//        studyProgressSegmentedControl.heightAnchor.constraint(equalToConstant: 44).isActive = true
+//        
+//        let segmentsItem = UIBarButtonItem(customView: studyProgressSegmentedControl)
+//        //segmentsItem.customView?.backgroundColor = .clear
+//        
+//        let searchButtton = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchTapped))
+//        let space = UIBarButtonItem.flexibleSpace()
+//        
+//        
+//        toolbarItems = [segmentsItem, space, searchButtton]
+//        
+//        updateProgressSgControlColors()
+//    }
     
-        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
-        
+    func setupBottomBar() {
+        let toLearn = UIImage(systemName: "lightbulb", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+        let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+        let progress = UIImage(systemName: "percent", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+
+        studyProgressSegmentedControl = UISegmentedControl(items: [toLearn!, learned!, progress!])
+//        studyProgressSegmentedControl.insertSegment(with: toLearn!, at: 0, animated: false)
+//        studyProgressSegmentedControl.insertSegment(with: learned!, at: 1, animated: false)
         studyProgressSegmentedControl.selectedSegmentIndex = 0
-        studyProgressSegmentedControl.widthAnchor.constraint(equalToConstant: 140).isActive = true
-        studyProgressSegmentedControl.heightAnchor.constraint(equalToConstant: 44).isActive = true
-        
-        let segmentsItem = UIBarButtonItem(customView: studyProgressSegmentedControl)
-        
-        let searchButtton = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchTapped))
-        let space = UIBarButtonItem.flexibleSpace()
-        
-        
-        toolbarItems = [segmentsItem, space, searchButtton]
-        
+        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
+        //studyProgressSegmentedControl.selectedSegmentTintColor = .systemGray5
+        studyProgressSegmentedControl.subviews.forEach {
+            $0.backgroundColor = .systemBackground
+        }
+        //studyProgressSegmentedControl.selectedSegmentTintColor = .clear
+
+        // --- ВАЖНО: контейнер с фиксированной шириной ---
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(studyProgressSegmentedControl)
+        container.backgroundColor = .clear
+        container.layer.cornerRadius = 22 * scaleFactor
+
+        studyProgressSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            container.widthAnchor.constraint(equalToConstant: 210), // 👈 Увеличиваешь как хочешь
+            container.heightAnchor.constraint(equalToConstant: 44),
+            studyProgressSegmentedControl.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            studyProgressSegmentedControl.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            studyProgressSegmentedControl.topAnchor.constraint(equalTo: container.topAnchor),
+            studyProgressSegmentedControl.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+        ])
+
+        let segmentsItem = UIBarButtonItem(customView: container)
+        //segmentsItem.customView?.backgroundColor = .clear
+
+        let searchButton = UIBarButtonItem(
+            barButtonSystemItem: .search,
+            target: self,
+            action: #selector(searchTapped)
+        )
+
+        toolbarItems = [
+            segmentsItem,
+            UIBarButtonItem.flexibleSpace(),
+            searchButton
+        ]
         updateProgressSgControlColors()
+        
     }
     
 //    func setupCollectionView() {
@@ -261,7 +309,8 @@ extension AtlasViewController {
             self?.atlasModel.currentConfig.region = region
             self?.atlasModel.currentConfig.mode = mode
             self?.updateUIForConfig()
-            self?.atlasModel.dataStore.saveUserConfig(self?.atlasModel.currentConfig ?? StudyConfiguration(mode: .learning, region: .world))
+            self?.atlasModel.saveUserConfiguratin(self?.atlasModel.currentConfig ?? StudyConfiguration(mode: .learning, region: .world))
+            self?.collectionView.reloadData()
         }
         
         if let sheet = nav.sheetPresentationController {
@@ -271,6 +320,31 @@ extension AtlasViewController {
         present(nav, animated: true)
     }
     
+//    func applyStudyModeFilter(_ region: Region) {
+////        let continentName: String
+////        
+////        switch region {
+////        case .continent(let name): continentName = name
+////        case .world : continentName = "World"
+////        }
+////        
+////        if continentName == "World" {
+////            filteredContinents = filteredContinents.map {
+////                var c = $0
+////                c.isSelected = true
+////                return c
+////            }
+////        } else {
+////            filteredContinents = filteredContinents.map {
+////                var c = $0
+////                c.name == continentName ? (c.isSelected = true) : (c.isSelected = false)
+////                return c
+////            }
+////        }
+////        
+////        applyLearningFilter()
+//    }
+    
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         let selectedIndex = sender.selectedSegmentIndex
         print("Selected segment index: \(selectedIndex)")
@@ -278,11 +352,8 @@ extension AtlasViewController {
     }
     
     @objc func progressModeChanged(_ sender: UISegmentedControl) {
-        let selectedIndex = sender.selectedSegmentIndex
-        print("Selected segment index: \(selectedIndex)")
-        // Perform actions based on the selected segment
-        
-        updateProgressSgControlColors()
+        atlasModel.updateFilterMode(sender.selectedSegmentIndex)
+        collectionView.reloadData()
     }
     
     
@@ -293,6 +364,7 @@ extension AtlasViewController {
     
     private func updateUIForConfig() {
         modeButton.image = atlasModel.currentConfig.mode == .learning ? UIImage(systemName: "book") : UIImage(systemName: "person.fill.questionmark")
+        modeButton.tintColor = atlasModel.currentConfig.mode == .learning ? .systemBlue : .systemRed
         switch atlasModel.currentConfig.mode {
         case .learning:
             // включаем «подсказки», без счёта
@@ -307,7 +379,8 @@ extension AtlasViewController {
         let index = studyProgressSegmentedControl.selectedSegmentIndex
         let activeToLearnColor = UIColor.systemYellow
         let activeLearnedColor = UIColor.systemGreen
-        let activeColor = index == 0 ? activeToLearnColor : activeLearnedColor
+        let activeProgressColor = UIColor.systemBrown
+        let activeColor = (index == 0) ? activeToLearnColor : (index == 1 ? activeLearnedColor : activeProgressColor)
         let inactiveColor = UIColor.tertiaryLabel
         let size: CGFloat = 16 * scaleFactor
         let activeFont = UIFont.systemFont(ofSize: size, weight: .bold)
@@ -316,35 +389,51 @@ extension AtlasViewController {
         studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
         studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
     }
+    
+//    func applyLearningFilter() {
+//   //        guard let world = atlasModel.world else { return }
+//   //
+//   //        let showLearned = studyProgressSegmentedControl.selectedSegmentIndex == 1
+//   //
+//   //        filteredContinents = world.continents.filter{ $0.isSelected }.map { continent in
+//   //            let filteredCountries = continent.countries.filter { $0.isLearned == showLearned }
+//   //            return Continent(name: continent.name, countries: filteredCountries)
+//   //        }
+//   //        //atlasModel.updateWorldContinents(filteredContinents)
+//           collectionView.reloadData()
+//       }
 }
 //MARK: - CollectionView Delegate
 extension AtlasViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return atlasModel.world?.continents.count ?? 0
+        return atlasModel.currentWorld?.continents.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
        // let countries = atlasModel.world?.continents.flatMap { $0.countries }.count ?? 0
-        let countries = atlasModel.world?.continents[section].countries.count ?? 0
+        let countries = atlasModel.currentWorld?.continents[section].countries.count ?? 0
         return countries
+
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CountryCell", for: indexPath) as! CountryCell
         
-        //let allCountries = atlasModel.world?.continents.flatMap { $0.countries } ?? []
-        let continents = atlasModel.world?.continents[indexPath.section]
+        //let allCountries = atlasModel.currentWorld?.continents.flatMap { $0.countries } ?? []
+        let continents = atlasModel.currentWorld?.continents[indexPath.section]
         let country = continents?.countries[indexPath.item]
         
-        cell.configure(index: indexPath.item + 1, flag: country?.flag ?? "undefined", name: country?.name ?? "undefined", capital: country?.capital ?? "undefined")
+        
+        cell.configure(index: indexPath.item + 1, flag: country?.flag ?? "" , name: country?.name ?? "" , capital: country?.capital ?? "")
         
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let sectionName = atlasModel.world?.continents[indexPath.section].name ?? "Unknown"
-        let count = atlasModel.world?.continents[indexPath.section].countries.count ?? 0
+        let sectionName = atlasModel.currentWorld?.continents[indexPath.section].name ?? "Unknown"
+        let count = atlasModel.currentWorld?.continents[indexPath.section].countries.count ?? 0
+
         
         if kind == UICollectionView.elementKindSectionHeader {
             let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HeaderView.reuseId, for: indexPath) as! HeaderView

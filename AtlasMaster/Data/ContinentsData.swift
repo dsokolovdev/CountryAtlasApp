@@ -9,7 +9,7 @@
 
 //Regions and Countries
 struct World: Codable {
-    let continents: [Continent]
+    var continents: [Continent]
     
     init(continents: [Continent]) {
         self.continents = continents
@@ -22,13 +22,15 @@ struct World: Codable {
 
 struct Continent: Codable {
     let name: String
-    let countries: [Country]
+    var countries: [Country]
+    var isSelected: Bool = true
 }
 
 struct Country: Comparable, Codable {
     let name: String
     let capital: String
     let flag: String
+    var isLearned: Bool
     
     static func < (lhs: Country, rhs: Country) -> Bool {
         lhs.name < rhs.name

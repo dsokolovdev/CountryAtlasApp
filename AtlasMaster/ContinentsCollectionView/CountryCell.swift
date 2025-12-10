@@ -59,6 +59,7 @@ import UIKit
 
 
 final class CountryCell: UICollectionViewCell {
+    static let reusedId = "CountryCell"
     
     private let indexLabel: UILabel = {
         let lbl = UILabel()
