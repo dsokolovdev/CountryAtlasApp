@@ -63,28 +63,29 @@ final class CountryCell: UICollectionViewCell {
     
     private let indexLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .systemFont(ofSize: 14, weight: .light)
+        lbl.font = .rounded(ofSize: 14, weight: .light)
         lbl.textAlignment = .natural
         return lbl
     }()
     
     private let flagLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .systemFont(ofSize: 60)
+        lbl.font = .rounded(ofSize: 66)
         lbl.textAlignment = .left
         return lbl
     }()
 
     private let nameLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .systemFont(ofSize: 18, weight: .semibold)
+        lbl.font = .rounded(ofSize: 18, weight: .semibold)
+        lbl.numberOfLines = 0
         lbl.textAlignment = .right
         return lbl
     }()
 
     private let capitalLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .systemFont(ofSize: 16, weight: .medium)
+        lbl.font = .rounded(ofSize: 16, weight: .medium)
         lbl.textColor = .secondaryLabel
         lbl.textAlignment = .right
         return lbl
@@ -111,15 +112,16 @@ final class CountryCell: UICollectionViewCell {
 
         contentView.addSubview(container)
         container.translatesAutoresizingMaskIntoConstraints = false
-
+        
+        let c: CGFloat = 16 * scaleFactor
         NSLayoutConstraint.activate([
-            container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: c),
+            container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -c),
             container.topAnchor.constraint(equalTo: contentView.topAnchor),
             container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
 
-        contentView.layer.cornerRadius = 10
+        contentView.layer.cornerRadius = 10 * scaleFactor
         contentView.backgroundColor = .secondarySystemBackground.withAlphaComponent(0.2)
     }
 

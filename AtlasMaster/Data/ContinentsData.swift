@@ -5,7 +5,7 @@
 //  Created by Dmitri  on 07.12.25.
 //
 
-
+import UIKit
 
 //Regions and Countries
 struct World: Codable {
@@ -20,17 +20,25 @@ struct World: Codable {
     }
 }
 
-struct Continent: Codable {
+struct Continent: Equatable, Codable {
     let name: String
     var countries: [Country]
     var isSelected: Bool = true
+    
+    static func == (lhs: Continent, rhs: Continent) -> Bool {
+        lhs.name == rhs.name
+    }
 }
 
-struct Country: Comparable, Codable {
+struct Country: Equatable, Comparable, Codable {
     let name: String
     let capital: String
     let flag: String
     var isLearned: Bool
+    
+    static func == (lhs: Country, rhs: Country) -> Bool {
+        lhs.name == rhs.name && lhs.capital == rhs.capital && lhs.flag == rhs.flag
+    }
     
     static func < (lhs: Country, rhs: Country) -> Bool {
         lhs.name < rhs.name
@@ -57,6 +65,13 @@ struct Progress {
     var left: [String]
 }
 
-
-
+struct ContinentStats {
+    let name: String
+    let total: Int
+    let learned: Int
+    let toLearn: Int
+    
+    let learnedProgress: Double     // 0.0 ... 1.0
+    let toLearnProgress: Double
+}
 
