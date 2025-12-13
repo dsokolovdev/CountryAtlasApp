@@ -22,6 +22,10 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
     private var studyProgressSegmentedControl: UISegmentedControl!
+    
+    //Snapshots of Data
+    private var snapshotWorld = World()
+    private var snapshotStats: [ContinentStats] = []
 
     init(model: AtlasModel) {
         self.atlasModel = model
@@ -50,10 +54,12 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         
         atlasModel.onWorldUpdated = { [weak self] in
             DispatchQueue.main.async {
-                self?.collectionView.reloadData()
+                //self?.collectionView.reloadData()
                 //self?.applyLearningFilter()
+                self?.reloadSnapshot()
             }
         }
+        reloadSnapshot()
         
         
         title = "AtlasMaster"
@@ -144,7 +150,8 @@ extension AtlasViewController {
             let learnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
                 
                 self.atlasModel.markCountryAsLearned(at: indexPath)
-                self.collectionView.reloadData()
+                //self.collectionView.reloadData()
+                self.reloadSnapshot()
                 
                 completion(true)
             }
@@ -163,11 +170,13 @@ extension AtlasViewController {
             guard let self = self else { return nil }
             
             guard self.atlasModel.filterMode == 1 else { return nil }
+            
             // зелёная кнопка "Learned"
             let unlearnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
                 
                 self.atlasModel.markCountryAsLearned(at: indexPath)
-                self.collectionView.reloadData()
+                self.reloadSnapshot()
+                //self.collectionView.reloadData()
 
                 completion(true)
             }
@@ -257,41 +266,6 @@ extension AtlasViewController {
     }
     
     
-    
-    
-//    func setupBottomBar() {
-//        studyProgressSegmentedControl = UISegmentedControl()
-//        let toLearnSegment = UIImage(systemName: "lightbulb",  withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-//        let learnedSegment = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-//
-//        studyProgressSegmentedControl = UISegmentedControl(items: [toLearnSegment!, learnedSegment!])
-//        
-//        studyProgressSegmentedControl.subviews.forEach {
-//            $0.backgroundColor = .white
-//        }
-////        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 0)
-////        studyProgressSegmentedControl.setWidth(70, forSegmentAt: 1)
-//        studyProgressSegmentedControl.selectedSegmentTintColor = .systemGroupedBackground
-//        studyProgressSegmentedControl.autoresizingMask = [.flexibleTopMargin, .flexibleBottomMargin, .flexibleWidth]
-//    
-//        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
-//        
-//        studyProgressSegmentedControl.selectedSegmentIndex = 0
-//        studyProgressSegmentedControl.widthAnchor.constraint(equalToConstant: 140).isActive = true
-//        studyProgressSegmentedControl.heightAnchor.constraint(equalToConstant: 44).isActive = true
-//        
-//        let segmentsItem = UIBarButtonItem(customView: studyProgressSegmentedControl)
-//        //segmentsItem.customView?.backgroundColor = .clear
-//        
-//        let searchButtton = UIBarButtonItem(barButtonSystemItem: .search, target: self, action: #selector(searchTapped))
-//        let space = UIBarButtonItem.flexibleSpace()
-//        
-//        
-//        toolbarItems = [segmentsItem, space, searchButtton]
-//        
-//        updateProgressSgControlColors()
-//    }
-    
     func setupBottomBar() {
         let toLearn = UIImage(systemName: "lightbulb", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
         let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
@@ -344,30 +318,6 @@ extension AtlasViewController {
         
     }
     
-//    func setupCollectionView() {
-//              let layout = UICollectionViewFlowLayout()
-//              layout.minimumLineSpacing = 8
-//              layout.itemSize = CGSize(width: view.bounds.width, height: 100)
-//
-//              collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-//              collectionView.translatesAutoresizingMaskIntoConstraints = false
-//              collectionView.backgroundColor = .systemBackground
-//
-//              collectionView.dataSource = self
-//              collectionView.delegate = self
-//
-//              collectionView.register(CountryCell.self, forCellWithReuseIdentifier: "CountryCell")
-//
-//              view.addSubview(collectionView)
-//
-//              NSLayoutConstraint.activate([
-//                  collectionView.topAnchor.constraint(equalTo: view.topAnchor),
-//                  collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//                  collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//                  collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-//              ])
-//          }
-    
 }
 
 //MARK: - Actions
@@ -377,18 +327,9 @@ extension AtlasViewController {
         
     }
     
-    //    @objc func modeButtonTapped(){
-    //        let vc = ModeViewController()
-    //        vc.modalPresentationStyle = .pageSheet
-    //        present(vc, animated: true)
-    //    }
     
     @objc func modeButtonTapped() {
         guard let world = atlasModel.world else { return }
-        
-        //Add "World" first menu item into picker
-        var extended = world.continents
-        extended.insert(Continent(name: "World", countries: []), at: 0)
         
         let vc = StudyModeViewController(world: world, initialConfig: atlasModel.currentConfig)
         let nav = UINavigationController(rootViewController: vc)
@@ -400,8 +341,10 @@ extension AtlasViewController {
             self?.atlasModel.currentConfig.region = region
             self?.atlasModel.currentConfig.mode = mode
             self?.updateUIForConfig()
-            self?.atlasModel.saveUserConfiguratin(self?.atlasModel.currentConfig ?? StudyConfiguration(mode: .learning, region: .world))
-            self?.collectionView.reloadData()
+            self?.atlasModel.saveUserConfiguratin((self?.atlasModel.currentConfig) ?? StudyConfiguration(mode: .learning, region: .world))
+            self?.reloadSnapshot()
+            //self?.collectionView.reloadData()
+            
         }
         
         if let sheet = nav.sheetPresentationController {
@@ -410,31 +353,6 @@ extension AtlasViewController {
         }
         present(nav, animated: true)
     }
-    
-//    func applyStudyModeFilter(_ region: Region) {
-////        let continentName: String
-////        
-////        switch region {
-////        case .continent(let name): continentName = name
-////        case .world : continentName = "World"
-////        }
-////        
-////        if continentName == "World" {
-////            filteredContinents = filteredContinents.map {
-////                var c = $0
-////                c.isSelected = true
-////                return c
-////            }
-////        } else {
-////            filteredContinents = filteredContinents.map {
-////                var c = $0
-////                c.name == continentName ? (c.isSelected = true) : (c.isSelected = false)
-////                return c
-////            }
-////        }
-////        
-////        applyLearningFilter()
-//    }
     
     @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
         let selectedIndex = sender.selectedSegmentIndex
@@ -455,7 +373,8 @@ extension AtlasViewController {
         }
         
         applyLayoutForCurrentMode()
-        collectionView.reloadData()
+        //collectionView.reloadData()
+        reloadSnapshot()
         updateSegmentsColors()
     }
     
@@ -493,27 +412,39 @@ extension AtlasViewController {
         studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
     }
     
-//    func applyLearningFilter() {
-//   //        guard let world = atlasModel.world else { return }
-//   //
-//   //        let showLearned = studyProgressSegmentedControl.selectedSegmentIndex == 1
-//   //
-//   //        filteredContinents = world.continents.filter{ $0.isSelected }.map { continent in
-//   //            let filteredCountries = continent.countries.filter { $0.isLearned == showLearned }
-//   //            return Continent(name: continent.name, countries: filteredCountries)
-//   //        }
-//   //        //atlasModel.updateWorldContinents(filteredContinents)
-//           collectionView.reloadData()
-//       }
+    //MARK: - Data Snapshots
+    func reloadSnapshot_() {
+        snapshotWorld = atlasModel.filteredWorld()
+        collectionView.reloadData()
+    }
+    
+    func reloadSnapshot() {
+        switch displayMode {
+        case .list:
+            reloadWorldSnapshot()
+        case .stats:
+            reloadStatsSnapshot()
+        }
+        collectionView.reloadData()
+    }
+    
+    func reloadWorldSnapshot() {
+        snapshotWorld = atlasModel.filteredWorld()
+    }
+    
+    func reloadStatsSnapshot() {
+        snapshotStats = atlasModel.getStatistics()
+    }
+
 }
 //MARK: - CollectionView Delegate
 extension AtlasViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         if displayMode == .list {
-            return atlasModel.filteredWorld().continents.count
+            return snapshotWorld.continents.count
         } else {
-            return atlasModel.getStatistics().count
+            return snapshotStats.count
         }
        
     }
@@ -521,7 +452,7 @@ extension AtlasViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         
         if displayMode == .list {
-            return atlasModel.filteredWorld().continents[section].countries.count
+            return snapshotWorld.continents[section].countries.count
         } else {
             return 1 //only stats cell
         }
@@ -531,12 +462,12 @@ extension AtlasViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if displayMode == .list {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CountryCell.reusedId, for: indexPath) as! CountryCell
-            let continents = atlasModel.filteredWorld().continents[indexPath.section]
+            let continents = snapshotWorld.continents[indexPath.section]
             let country = continents.countries[indexPath.item]
             cell.configure(index: indexPath.item + 1, flag: country.flag, name: country.name, capital: country.capital)
             return cell
         } else {
-            let stats = atlasModel.getStatistics()[indexPath.section]
+            let stats = snapshotStats[indexPath.section]
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StatsCell.reusedId, for: indexPath) as! StatsCell
             cell.configure(with: stats)
             return cell
@@ -546,7 +477,7 @@ extension AtlasViewController: UICollectionViewDataSource {
     //Header, Footer
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if displayMode == .list {
-            let sectionName = atlasModel.filteredWorld().continents[indexPath.section].name
+            let sectionName = snapshotWorld.continents[indexPath.section].name
             let totalCount = atlasModel.getTotal(for: indexPath)
             let currentCount = atlasModel.getCurrentCount(for: indexPath)
             
@@ -566,7 +497,7 @@ extension AtlasViewController: UICollectionViewDataSource {
                 return footer
             }
         } else {
-            let continent = atlasModel.getStatistics()[indexPath.section]
+            let continent = snapshotStats[indexPath.section]
             let sectionName = continent.name
             let totalCount = continent.total
             let learnedCount = continent.learned
@@ -622,131 +553,4 @@ extension AtlasViewController {
     }
 }
 
-// MARK: - Swipe Actions
-//extension AtlasViewController {
-//
-//    // свайп СЛЕВА → (обычно "Mark as learned")
-//    func collectionView(_ collectionView: UICollectionView, leadingSwipeActionsConfigurationForItemAt indexPath: IndexPath ) -> UISwipeActionsConfiguration? {
-//
-//        // зелёная кнопка "Learned"
-//        let learnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
-//            print("Swipe LEFT → Learned on section \(indexPath.section), item \(indexPath.item)")
-//            completion(true)
-//        }
-//
-//        learnedAction.backgroundColor = .systemGreen
-//        learnedAction.image = UIImage(systemName: "checkmark") // зелёная галочка автоматически будет белой внутри
-//
-//        return UISwipeActionsConfiguration(actions: [learnedAction])
-//    }
-//
-//    // свайп СПРАВА ← (обычно "Unlearn")
-//    func collectionView(_ collectionView: UICollectionView, trailingSwipeActionsConfigurationForItemAt indexPath: IndexPath ) -> UISwipeActionsConfiguration? {
-//
-//        let unlearnAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
-//            print("Swipe RIGHT → Unlearn on section \(indexPath.section), item \(indexPath.item)")
-//            completion(true)
-//        }
-//
-//        unlearnAction.backgroundColor = .systemYellow
-//        unlearnAction.image = UIImage(systemName: "lightbulb")
-//
-//        return UISwipeActionsConfiguration(actions: [unlearnAction])
-//    }
-//}
 
-
-//extension AtlasViewController {
-//    func collectionView(_ collectionView: UICollectionView, trailingSwipeActionsConfigurationForItemAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-//
-//        let learned = UIContextualAction(style: .normal, title: nil) { _, _, done in
-//            print("Learned tapped")
-//            done(true)
-//        }
-//        learned.image = UIImage(systemName: "checkmark")
-//        learned.backgroundColor = .systemGreen
-//
-//        return UISwipeActionsConfiguration(actions: [learned])
-//    }
-//
-//
-//    func collectionView(_ collectionView: UICollectionView, leadingSwipeActionsConfigurationForItemAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-//
-//        let unlearn = UIContextualAction(style: .normal, title: nil) { _, _, done in
-//            print("Unlearn tapped")
-//            done(true)
-//        }
-//        unlearn.image = UIImage(systemName: "lightbulb")
-//        unlearn.backgroundColor = .systemYellow
-//
-//        return UISwipeActionsConfiguration(actions: [unlearn])
-//    }
-//}
-
-
-//extension AtlasViewController {
-//    func setupCollectionView_() {
-//           // 1. Create a list configuration
-//           var layoutConfig = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
-//           
-//           // 2. Define the trailing swipe actions provider
-//           layoutConfig.trailingSwipeActionsConfigurationProvider = { [weak self] indexPath in
-//               guard let self = self else { return nil }
-//               
-//               // Create a delete action
-//               let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (action, sourceView, completionHandler) in
-//                   self?.handleDelete(at: indexPath)
-//                   completionHandler(true) // Indicate that the action was performed
-//               }
-//               deleteAction.image = UIImage(systemName: "trash") // Optional: Add a system icon
-//               
-//               // Create a configuration with the actions
-//               let swipeConfiguration = UISwipeActionsConfiguration(actions: [deleteAction])
-//               // Optional: Prevent full swipe from automatically performing the first action
-//               swipeConfiguration.performsFirstActionWithFullSwipe = false
-//               
-//               return swipeConfiguration
-//           }
-//           
-//           // 3. Define the leading swipe actions provider (optional)
-//           layoutConfig.leadingSwipeActionsConfigurationProvider = { [weak self] indexPath in
-//               guard let self = self else { return nil }
-//
-//               let favoriteAction = UIContextualAction(style: .normal, title: "Favorite") { [weak self] (action, sourceView, completionHandler) in
-//                   self?.handleFavorite(at: indexPath)
-//                   completionHandler(true)
-//               }
-//               favoriteAction.backgroundColor = .systemYellow
-//               favoriteAction.image = UIImage(systemName: "star")
-//
-//               return UISwipeActionsConfiguration(actions: [favoriteAction])
-//           }
-//
-//           // 4. Create the compositional layout
-//        let layout = UICollectionViewCompositionalLayout.list(using: layoutConfig)  //layoutWithListConfiguration(layoutConfig)
-//           
-//           // 5. Initialize the collection view with the layout
-//           collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-//           collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-//           collectionView.delegate = self
-//           view.addSubview(collectionView)
-//           
-//           // ... set up data source and register your custom cell
-//       }
-//       
-//       // ... data source methods (cellForItemAt, etc.)
-//       
-//       func handleDelete(at indexPath: IndexPath) {
-//           // Implement your data deletion logic here
-//           print("Deleting item at index path: \(indexPath)")
-//           // Update your data source, then apply changes to the collection view
-//       }
-//       
-//       func handleFavorite(at indexPath: IndexPath) {
-//           // Implement your favorite logic here
-//           print("Favoriting item at index path: \(indexPath)")
-//           // Update your data source
-//       }
-//   
-//
-//}

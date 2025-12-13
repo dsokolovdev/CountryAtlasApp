@@ -9,16 +9,18 @@ import UIKit
 final class StatsCell: UICollectionViewCell {
     static let reusedId = "StatsCell"
     
-    let progressView: UIProgressView = {
-        let view = UIProgressView(progressViewStyle: .default)
-        view.layer.cornerRadius = 20
-        view.layer.borderWidth = 3
-        view.layer.borderColor = UIColor.systemGray6.cgColor
-        view .clipsToBounds = true
-        //view.progressTintColor = .blue.withAlphaComponent(0.8)
-        view.trackTintColor = .systemGray6.withAlphaComponent(0.3)
-        return view
-    }()
+//    let progressView: UIProgressView = {
+//        let view = UIProgressView(progressViewStyle: .default)
+//        view.layer.cornerRadius = 20
+//        view.layer.borderWidth = 3
+//        view.layer.borderColor = UIColor.systemGray6.cgColor
+//        view .clipsToBounds = true
+//        //view.progressTintColor = .blue.withAlphaComponent(0.8)
+//        view.trackTintColor = .systemGray6.withAlphaComponent(0.3)
+//        return view
+//    }()
+    
+    let progressView = RoundedProgressView()
     
     private let learnedProgressLabel: UILabel = {
         let lbl = UILabel()
@@ -93,9 +95,14 @@ final class StatsCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
 
-        progressView.progressTintColor = nil
-        progressView.setProgress(0, animated: false)
+        //progressView.progressTintColor = nil
+        //progressView.setProgress(0, animated: false)
     }
+    
+    override func layoutSubviews() {
+            super.layoutSubviews()
+           // progressView.setProgress(progressView.progress, animated: false)
+        }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -147,22 +154,30 @@ final class StatsCell: UICollectionViewCell {
     }
     
     func configure(with stats: ContinentStats) {
-        learnedProgressLabel.text = String(format: "%.1f", stats.learnedProgress * 100)
+        progressView.layer.removeAllAnimations()
+        progressView.transform = .identity
+        progressView.setProgress(0)
+        
+        
+        
+        learnedProgressLabel.text = String(format: "%.1f", stats.learnedProgress * 100 )
         toLearnProgressLabel.text = String(format: "%.1f", stats.toLearnProgress * 100)
         
-        //        if stats.name == "World" {
-        //            progressView.progressTintColor = .purple.withAlphaComponent(0.8)
-        //        } else {
-        //            progressView.progressTintColor = .blue.withAlphaComponent(0.8)
-        //        }
+                if stats.name == "World" {
+                    progressView.setFillColor(.purple.withAlphaComponent(0.8))
+                } else {
+                    progressView.setFillColor(.blue.withAlphaComponent(0.8))
+                }
         
           //  progressView.progressTintColor = stats.name == "World" ? .purple.withAlphaComponent(0.8) : .blue.withAlphaComponent(0.8)
         
-        progressView.progress = Float(stats.learnedProgress)
-//        progressView.setProgress(0, animated: false)
-//        progressView.setProgress(Float(stats.learnedProgress), animated: false)
+       // progressView.progress = Float(stats.learnedProgress)
+        //progressView.setProgress(0, animated: false)
         
-        print(stats.name, stats.learned, stats.toLearn, stats.learnedProgress, stats.toLearnProgress       )
+        progressView.setProgress(CGFloat(stats.learnedProgress))
+        progressView.layoutIfNeeded()
+        
+        //print(stats.name, stats.learned, stats.toLearn, (stats.learnedProgress * 10).rounded() / 10, (stats.toLearnProgress * 10).rounded() / 10 )
         
         learnedProgressLabel.textColor = stats.learnedProgress > 0 ? .systemGreen : .systemGreen.withAlphaComponent(0.5)
         toLearnProgressLabel.textColor = stats.toLearnProgress < 100 ? .systemYellow : .systemYellow.withAlphaComponent(0.5)

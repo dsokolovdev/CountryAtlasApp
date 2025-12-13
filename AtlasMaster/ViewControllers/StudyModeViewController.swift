@@ -158,11 +158,17 @@ extension StudyModeViewController {
         glassView.layer.shadowOffset = .zero
         glassView.translatesAutoresizingMaskIntoConstraints = false
         
-        var extended = world.continents
-        extended.insert(Continent(name: "World", countries: []), at: 0)
-        let modifiedWorld = World(continents: extended)
+//        var extended = world.continents
+//        extended.insert(Continent(name: "World", countries: []), at: 0)
+//        let modifiedWorld = World(continents: extended)
         
-        continentPicker = ContinentPickerView(continents: modifiedWorld.continents)
+        
+        var sortedContinents = world.continents.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        sortedContinents.insert(Continent(name: "World", countries: []), at: 0)
+
+        continentPicker = ContinentPickerView(continents: sortedContinents)
+        
+       // continentPicker = ContinentPickerView(continents: modifiedWorld.continents)
         continentPicker.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(glassView)
@@ -190,13 +196,16 @@ extension StudyModeViewController {
 extension StudyModeViewController {
     //Confirm selection on segmented control and picker
     @objc private func doneTapped() {
-        let continent = continentPicker.selectedContinent
+        //let continent = continentPicker.selectedContinent
+        let continent = continentPicker.selectedName
         let index = studyModeSegmentedControl.selectedSegmentIndex
-        let region: Region = (continent == "World") ? .world : .continent(continent ?? "Europe")
+        let region: Region = (continent == "World") ? .world : .continent(continent)
         let mode: StudyMode = (index == 0) ? .learning : .testing
         
         selectedModeindex = index
         initialRegion = region
+        
+        print(selectedModeindex, initialRegion)
         
         onSelectionConfirmed?(region, mode)
         

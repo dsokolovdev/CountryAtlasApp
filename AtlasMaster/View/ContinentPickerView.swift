@@ -11,8 +11,12 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     
     private let picker = UIPickerView()
     var continents: [Continent]
-    var selectedContinent: String!
+    //var selectedContinent: String!
     var currentIndex: Int = 0
+    var selectedName: String {
+        let row = picker.selectedRow(inComponent: 0)
+        return continents[row].name
+    }
     
 //    override init(frame: CGRect) {
 //        super.init(frame: frame)
@@ -93,7 +97,7 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         currentIndex =  row
-        selectedContinent = continents[row].name
+        //selectedContinent = continents[row].name
         //pickerView.reloadComponent(component)
     }
     
@@ -101,8 +105,9 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     /// Выбрать континент по индексу
     func selectContinent(at index: Int) {
         guard index >= 0 && index < continents.count else { return }
+        currentIndex = index
         picker.selectRow(index, inComponent: 0, animated: false)
-        selectedContinent = continents[index].name
+        //selectedContinent = continents[index].name
     }
     
     /// Выбрать континент по имени

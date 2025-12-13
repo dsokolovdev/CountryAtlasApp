@@ -58,8 +58,12 @@ final class AtlasModel {
 
         let selectedRegion = currentConfig.region
         //let showLearned = filterMode == 1
+        
+        let sortedContinents = world.continents.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
 
-        let filteredContinents = world.continents.compactMap { continent -> Continent? in
+        let filteredContinents = sortedContinents.compactMap { continent -> Continent? in
             
             // фильтр по региону
             switch selectedRegion {
@@ -76,6 +80,8 @@ final class AtlasModel {
                 case 2: return true               // Statistics → нужен полный список
                 default: return true
                 }
+            }.sorted {
+                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
             }
             
             return Continent(name: continent.name, countries: filteredCountries)
@@ -111,6 +117,7 @@ final class AtlasModel {
             (total: acc.total + 1, learned: acc.learned + (country.isLearned ? 1 : 0))
         }
         let learnedRatio = worldTotals.total == 0 ? 0 : Double(worldTotals.learned) / Double(worldTotals.total)
+        
         let worldStats = ContinentStats(
             name: "World",
             total: worldTotals.total,
@@ -137,7 +144,15 @@ final class AtlasModel {
             )
         }
         
-        return [worldStats] + continentStats
+        let sortedContinents = continentStats.sorted {
+            if $0.learnedProgress != $1.learnedProgress {
+                return $0.learnedProgress > $1.learnedProgress
+            } else {
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+        }
+        
+        return [worldStats] + sortedContinents
     }
     
     //MARK: - Update Study Mode logyc

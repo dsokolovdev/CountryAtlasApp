@@ -64,7 +64,7 @@ final class StatsHeader: UICollectionReusableView {
     func configure(name: String, progress: Double) {
         nameLabel.text = name
         starImage.alpha = progress > 0.0 ? 1 : 0
-        starImage.image = progress == 100.0 ? UIImage(systemName: "star.fill") : (progress >= 50 ? UIImage(systemName: "star.leadinghalf.filled") : UIImage(systemName: "star"))
+        starImage.image = progress == 1.0 ? UIImage(systemName: "star.fill") : (progress >= 0.5 ? UIImage(systemName: "star.leadinghalf.filled") : UIImage(systemName: "star"))
         
         if nameLabel.text == "World" {
             nameLabel.textColor  = progress > 0 ? .blue : .blue.withAlphaComponent(0.5)
