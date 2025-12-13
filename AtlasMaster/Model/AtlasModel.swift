@@ -84,8 +84,14 @@ final class AtlasModel {
                 $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
             }
             
+            if filterMode == 1 && filteredCountries.isEmpty {
+                return nil
+            }
+            
             return Continent(name: continent.name, countries: filteredCountries)
         }
+        
+        
         
         return World(continents: filteredContinents)
     }
@@ -183,6 +189,11 @@ final class AtlasModel {
 
         // 3. Обновляем
         world?.continents[continentIndex].countries[countryIndex].isLearned.toggle()
+        
+        // ✅ Save Progress
+           if let world {
+               dataStore.saveWorldData(world)
+           }
         
     }
     

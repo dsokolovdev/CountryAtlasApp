@@ -180,9 +180,9 @@ final class StatsCell: UICollectionViewCell {
         //print(stats.name, stats.learned, stats.toLearn, (stats.learnedProgress * 10).rounded() / 10, (stats.toLearnProgress * 10).rounded() / 10 )
         
         learnedProgressLabel.textColor = stats.learnedProgress > 0 ? .systemGreen : .systemGreen.withAlphaComponent(0.5)
-        toLearnProgressLabel.textColor = stats.toLearnProgress < 100 ? .systemYellow : .systemYellow.withAlphaComponent(0.5)
+        toLearnProgressLabel.textColor = stats.toLearnProgress < 1 ? .systemYellow : .systemYellow.withAlphaComponent(0.5)
         percentLearnedLabel.textColor = stats.learnedProgress > 0 ? .systemGreen.withAlphaComponent(0.8) : .systemGreen.withAlphaComponent(0.5)
-        percentToLearnLabel.textColor = stats.toLearnProgress < 100 ? .systemYellow.withAlphaComponent(0.8) : .systemYellow.withAlphaComponent(0.5)
+        percentToLearnLabel.textColor = stats.toLearnProgress < 1 ? .systemYellow.withAlphaComponent(0.8) : .systemYellow.withAlphaComponent(0.5)
         dashLabel.textColor = stats.learnedProgress > 0 ? .tertiaryLabel : .systemGray5
     }
     

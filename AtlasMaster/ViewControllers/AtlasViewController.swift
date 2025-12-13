@@ -22,10 +22,14 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     private var settingsButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
     private var studyProgressSegmentedControl: UISegmentedControl!
+    private var bottomControl: BottomControlBar!
+    private var bottomControlStack: UIStackView!
     
     //Snapshots of Data
     private var snapshotWorld = World()
     private var snapshotStats: [ContinentStats] = []
+    
+    private var bottomControlWidthConstraint: NSLayoutConstraint!
 
     init(model: AtlasModel) {
         self.atlasModel = model
@@ -38,7 +42,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.isToolbarHidden = false
+        navigationController?.isToolbarHidden = true
         
         
         //Load saved studyConfigs: region, mode
@@ -46,9 +50,11 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         atlasModel.loadEntireWorlddData()
         
         setupnavigationBar()
-        setupBottomBar()
+        //setupBottomBar()
         //setupNavigationBarSegmentedControl()
         setupCollectionView()
+        setupBottomControlBar()
+        bindBottomControlBar()
         
         applyLayoutForCurrentMode()
         
@@ -61,8 +67,10 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         }
         reloadSnapshot()
         
+        updateUIForConfig()
         
-        title = "AtlasMaster"
+        
+        //title = "AtlasMaster"
         view.backgroundColor = .systemBackground
         view.preservesSuperviewLayoutMargins = true
         
@@ -266,57 +274,102 @@ extension AtlasViewController {
     }
     
     
-    func setupBottomBar() {
-        let toLearn = UIImage(systemName: "lightbulb", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let progress = UIImage(systemName: "percent", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+    
+    
+    func setupBottomControlBar() {
+        bottomControl = BottomControlBar()
 
-        studyProgressSegmentedControl = UISegmentedControl(items: [toLearn!, learned!, progress!])
-//        studyProgressSegmentedControl.insertSegment(with: toLearn!, at: 0, animated: false)
-//        studyProgressSegmentedControl.insertSegment(with: learned!, at: 1, animated: false)
-        studyProgressSegmentedControl.selectedSegmentIndex = 0
-        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
-        //studyProgressSegmentedControl.selectedSegmentTintColor = .systemGray5
-        studyProgressSegmentedControl.subviews.forEach {
-            $0.backgroundColor = .systemBackground
-        }
-        //studyProgressSegmentedControl.selectedSegmentTintColor = .clear
-
-        // --- ВАЖНО: контейнер с фиксированной шириной ---
-        let container = UIView()
-        container.translatesAutoresizingMaskIntoConstraints = false
-        container.addSubview(studyProgressSegmentedControl)
-        container.backgroundColor = .clear
-        container.layer.cornerRadius = 22 * scaleFactor
-
-        studyProgressSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        let searchButton = UIButton(type: .system)
+        searchButton.setImage(UIImage(systemName: "magnifyingglass"), for: .normal)
+        searchButton.tintColor = .label
+        searchButton.backgroundColor = .systemBackground
+        searchButton.layer.cornerRadius = 25
+        searchButton.translatesAutoresizingMaskIntoConstraints = false
+        searchButton.layer.shadowColor = UIColor.label.cgColor
+        searchButton.layer.shadowOpacity = 0.15
+        searchButton.layer.shadowRadius = 6
+        searchButton.layer.shadowOffset = CGSize(width: 0, height: 2.5)
+        searchButton.layer.masksToBounds = false
 
         NSLayoutConstraint.activate([
-            container.widthAnchor.constraint(equalToConstant: 210), // 👈 Увеличиваешь как хочешь
-            container.heightAnchor.constraint(equalToConstant: 44),
-            studyProgressSegmentedControl.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            studyProgressSegmentedControl.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            studyProgressSegmentedControl.topAnchor.constraint(equalTo: container.topAnchor),
-            studyProgressSegmentedControl.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+            searchButton.widthAnchor.constraint(equalToConstant: 50),
+            searchButton.heightAnchor.constraint(equalToConstant: 50)
         ])
 
-        let segmentsItem = UIBarButtonItem(customView: container)
-        //segmentsItem.customView?.backgroundColor = .clear
+        bottomControlStack = UIStackView(arrangedSubviews: [bottomControl, searchButton])
+        bottomControlStack.axis = .horizontal
+        bottomControlStack.alignment = .center
+        bottomControlStack.spacing = 16
+        bottomControlStack.distribution = .equalSpacing   // ✅
+        bottomControlStack.translatesAutoresizingMaskIntoConstraints = false
 
-        let searchButton = UIBarButtonItem(
-            barButtonSystemItem: .search,
-            target: self,
-            action: #selector(searchTapped)
-        )
-
-        toolbarItems = [
-            segmentsItem,
-            UIBarButtonItem.flexibleSpace(),
-            searchButton
-        ]
-        updateSegmentsColors()
+        view.addSubview(bottomControlStack)
         
+        bottomControlWidthConstraint = bottomControl.widthAnchor.constraint(equalToConstant: bottomControl.preferredWidth)
+
+        NSLayoutConstraint.activate([
+            bottomControlStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor, constant: 12),
+            bottomControlStack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -12),
+            bottomControlStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
+            //bottomControlStack.heightAnchor.constraint(equalToConstant: 55),
+
+            bottomControlWidthConstraint,
+            bottomControl.heightAnchor.constraint(equalToConstant: 50) //
+        ])
     }
+    
+    
+//    func setupBottomBar() {
+//        let toLearn = UIImage(systemName: "lightbulb", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+//        let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+//        let progress = UIImage(systemName: "percent", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+//
+//        studyProgressSegmentedControl = UISegmentedControl(items: [toLearn!, learned!, progress!])
+////        studyProgressSegmentedControl.insertSegment(with: toLearn!, at: 0, animated: false)
+////        studyProgressSegmentedControl.insertSegment(with: learned!, at: 1, animated: false)
+//        studyProgressSegmentedControl.selectedSegmentIndex = 0
+//        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
+//        //studyProgressSegmentedControl.selectedSegmentTintColor = .systemGray5
+//        studyProgressSegmentedControl.subviews.forEach {
+//            $0.backgroundColor = .systemBackground
+//        }
+//        //studyProgressSegmentedControl.selectedSegmentTintColor = .clear
+//
+//        // --- ВАЖНО: контейнер с фиксированной шириной ---
+//        let container = UIView()
+//        container.translatesAutoresizingMaskIntoConstraints = false
+//        container.addSubview(studyProgressSegmentedControl)
+//        container.backgroundColor = .clear
+//        container.layer.cornerRadius = 22 * scaleFactor
+//
+//        studyProgressSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
+//
+//        NSLayoutConstraint.activate([
+//            container.widthAnchor.constraint(equalToConstant: 210), // 👈 Увеличиваешь как хочешь
+//            container.heightAnchor.constraint(equalToConstant: 44),
+//            studyProgressSegmentedControl.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+//            studyProgressSegmentedControl.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+//            studyProgressSegmentedControl.topAnchor.constraint(equalTo: container.topAnchor),
+//            studyProgressSegmentedControl.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+//        ])
+//
+//        let segmentsItem = UIBarButtonItem(customView: container)
+//        //segmentsItem.customView?.backgroundColor = .clear
+//
+//        let searchButton = UIBarButtonItem(
+//            barButtonSystemItem: .search,
+//            target: self,
+//            action: #selector(searchTapped)
+//        )
+//
+//        toolbarItems = [
+//            segmentsItem,
+//            UIBarButtonItem.flexibleSpace(),
+//            searchButton
+//        ]
+//        updateSegmentsColors()
+//        
+//    }
     
 }
 
@@ -338,11 +391,16 @@ extension AtlasViewController {
         vc.initialRegion = atlasModel.currentConfig.region
         
         vc.onSelectionConfirmed = { [weak self] region, mode in
-            self?.atlasModel.currentConfig.region = region
-            self?.atlasModel.currentConfig.mode = mode
-            self?.updateUIForConfig()
-            self?.atlasModel.saveUserConfiguratin((self?.atlasModel.currentConfig) ?? StudyConfiguration(mode: .learning, region: .world))
-            self?.reloadSnapshot()
+            guard let self else { return }
+            
+            self.atlasModel.currentConfig.region = region
+            self.atlasModel.currentConfig.mode = mode
+            self.updateUIForConfig()
+            self.atlasModel.saveUserConfiguratin((self.atlasModel.currentConfig))
+            self.reloadSnapshot()
+            
+            self.bottomControl.mode = mode == .learning ? .learning : .testing
+            self.bottomControlWidthConstraint.constant = self.bottomControl.preferredWidth
             //self?.collectionView.reloadData()
             
         }
@@ -360,23 +418,64 @@ extension AtlasViewController {
         // Perform actions based on the selected segment
     }
     
-    @objc func progressModeChanged(_ sender: UISegmentedControl) {
-        switch sender.selectedSegmentIndex {
-        case 0, 1:
-            displayMode = .list
-            atlasModel.updateFilterMode(sender.selectedSegmentIndex)
-        case 2:
-            displayMode = .stats
-            //atlasModel.updateFilterMode(sender.selectedSegmentIndex)
-        default:
-            break
+    //MARK: - Learning Mode Changed (Segmented Control)
+    private func bindBottomControlBar() {
+        bottomControl.onLearningChanged = { [weak self] segment in
+            guard let self else { return }
+            switch segment {
+            case .toLearn:
+                self.title = segment.title
+                self.displayMode = .list
+                self.atlasModel.updateFilterMode(segment.segment)
+            case .learned:
+                self.title = segment.title
+                self.displayMode = .list
+                self.atlasModel.updateFilterMode(segment.segment)
+            case .stats:
+                self.title = segment.title
+                self.displayMode = .stats
+            }
+            applyLayoutForCurrentMode()
+            reloadSnapshot()
         }
-        
-        applyLayoutForCurrentMode()
-        //collectionView.reloadData()
-        reloadSnapshot()
-        updateSegmentsColors()
+
+        bottomControl.onTestingChanged = { [weak self] segment in
+            guard let self else { return }
+
+            switch segment {
+            case .capital:
+                self.title = segment.title
+                print("Testing: Capital")
+            case .country:
+                self.title = segment.title
+                print("Testing: Country")
+            case .flag:
+                self.title = segment.title
+                print("Testing: Flag")
+            case .progress:
+                self.title = segment.title
+                print("Testing: Progress")
+            }
+        }
     }
+    
+//    @objc func progressModeChanged(_ sender: UISegmentedControl) {
+//        switch sender.selectedSegmentIndex {
+//        case 0, 1:
+//            displayMode = .list
+//            atlasModel.updateFilterMode(sender.selectedSegmentIndex)
+//        case 2:
+//            displayMode = .stats
+//            //atlasModel.updateFilterMode(sender.selectedSegmentIndex)
+//        default:
+//            break
+//        }
+//        
+//        applyLayoutForCurrentMode()
+//        //collectionView.reloadData()
+//        reloadSnapshot()
+//        //updateSegmentsColors()
+//    }
     
     
     @objc func searchTapped() {
@@ -385,32 +484,35 @@ extension AtlasViewController {
     
     
     private func updateUIForConfig() {
+        let mode = atlasModel.currentConfig.mode
+        
         modeButton.image = atlasModel.currentConfig.mode == .learning ? UIImage(systemName: "book") : UIImage(systemName: "person.fill.questionmark")
         modeButton.tintColor = atlasModel.currentConfig.mode == .learning ? .systemBlue : .systemRed
-        switch atlasModel.currentConfig.mode {
+        
+        bottomControl.mode = (mode == .learning) ? .learning : .testing
+        
+        switch mode {
         case .learning:
-            // включаем «подсказки», без счёта
-            break
+            title = bottomControl.currentLearningSegment.title
         case .testing:
-            // включаем «вопрос/ответ», считаем ошибки
-            break
+            title = bottomControl.currentTestingSegment.title
         }
     }
     
-    func updateSegmentsColors() {
-        let index = studyProgressSegmentedControl.selectedSegmentIndex
-        let activeToLearnColor = UIColor.systemYellow
-        let activeLearnedColor = UIColor.systemGreen
-        let activeProgressColor = UIColor.systemBlue
-        let activeColor = (index == 0) ? activeToLearnColor : (index == 1 ? activeLearnedColor : activeProgressColor)
-        let inactiveColor = UIColor.tertiaryLabel
-        let size: CGFloat = 16 * scaleFactor
-        let activeFont = UIFont.systemFont(ofSize: size, weight: .bold)
-        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .semibold)
-        
-        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
-        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
-    }
+//    func updateSegmentsColors() {
+//        let index = studyProgressSegmentedControl.selectedSegmentIndex
+//        let activeToLearnColor = UIColor.systemYellow
+//        let activeLearnedColor = UIColor.systemGreen
+//        let activeProgressColor = UIColor.systemBlue
+//        let activeColor = (index == 0) ? activeToLearnColor : (index == 1 ? activeLearnedColor : activeProgressColor)
+//        let inactiveColor = UIColor.tertiaryLabel
+//        let size: CGFloat = 16 * scaleFactor
+//        let activeFont = UIFont.systemFont(ofSize: size, weight: .bold)
+//        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .semibold)
+//        
+//        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
+//        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
+//    }
     
     //MARK: - Data Snapshots
     func reloadSnapshot_() {
