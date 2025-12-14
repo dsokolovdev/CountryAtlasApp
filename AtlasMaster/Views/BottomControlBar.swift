@@ -21,7 +21,7 @@ final class BottomControlBar: UIView {
         var title: String {
             switch self {
             case .toLearn:
-                return "To Learn"
+                return "To learn"
             case .learned:
                 return "Learned"
             case .stats:
@@ -75,23 +75,23 @@ final class BottomControlBar: UIView {
 
     // ✅ Должны быть инициализированы ДО super.init
     private let learningSegment: UISegmentedControl = {
-        let toLearn = UIImage(systemName: "lightbulb", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let progress = UIImage(systemName: "percent", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+        let toLearn = UIImage(systemName: "lightbulb.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        let progress = UIImage(systemName: "percent", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
 
         let sc = UISegmentedControl(items: [toLearn!, learned!, progress!])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
-        sc.selectedSegmentTintColor = .systemGray6
+        sc.selectedSegmentTintColor = AppColors.greyblue.withAlphaComponent(0.1)
         sc.subviews.forEach { $0.backgroundColor = .systemBackground }
         return sc
     }()
 
     private let testingSegment: UISegmentedControl = {
-        let capital = UIImage(systemName: "building.2", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let country = UIImage(systemName: "globe.americas", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let flag = UIImage(systemName: "flag", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-        let progress = UIImage(systemName: "medal", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
+        let capital = UIImage(systemName: "house.and.flag.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        let country = UIImage(systemName: "globe.europe.africa.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        let flag = UIImage(systemName: "flag.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        let progress = UIImage(systemName: "trophy.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
 
         let sc = UISegmentedControl(items: [capital!, country!, flag!, progress!])
         sc.translatesAutoresizingMaskIntoConstraints = false
@@ -121,12 +121,12 @@ final class BottomControlBar: UIView {
     private func setup() {
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .systemBackground
-        layer.cornerRadius = 25 * scaleFactor
+        layer.cornerRadius = 28 * scaleFactor
 
         layer.shadowColor = UIColor.label.cgColor
-        layer.shadowOpacity = 0.15
+        layer.shadowOpacity = 0.1
         layer.shadowOffset = CGSize(width: 0, height: 2.5)
-        layer.shadowRadius = 6
+        layer.shadowRadius = 4
         layer.masksToBounds = false
 
         // ✅ СНАЧАЛА addSubview, ПОТОМ constraints
@@ -180,16 +180,16 @@ final class BottomControlBar: UIView {
         let activeColor: UIColor
         switch index {
         case LearningSegment.toLearn.rawValue:
-            activeColor = .systemYellow
+            activeColor = AppColors.brightyellow
         case LearningSegment.learned.rawValue:
-            activeColor = .systemGreen
+            activeColor = AppColors.wildgreen
         case LearningSegment.stats.rawValue:
-            activeColor = .systemBlue
+            activeColor = AppColors.frightnight
         default:
             activeColor = .label
         }
 
-        let inactiveColor = UIColor.tertiaryLabel
+        let inactiveColor = AppColors.greyblue.withAlphaComponent(0.5)
         let size: CGFloat = 16 * scaleFactor
 
         learningSegment.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: UIFont.systemFont(ofSize: size, weight: .semibold)], for: .normal)
@@ -206,14 +206,14 @@ final class BottomControlBar: UIView {
         case TestingSegment.country.rawValue:
             activeColor = .systemPurple
         case TestingSegment.flag.rawValue:
-            activeColor = .systemTeal
+            activeColor = .systemIndigo
         case TestingSegment.progress.rawValue:
             activeColor = .systemBlue
         default:
             activeColor = .label
         }
         
-        let inactiveColor: UIColor = .tertiaryLabel
+        let inactiveColor: UIColor = AppColors.greyblue.withAlphaComponent(0.5)
         let size: CGFloat = 16 * scaleFactor
         
         testingSegment.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: UIFont.systemFont(ofSize: size, weight: .semibold)], for: .normal)

@@ -84,12 +84,12 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
         let label = UILabel()
         label.textAlignment = .center
-        label.textColor = .label
+       // label.textColor = .label
         label.text = continents[row].name
         //let isSelected = row == selectedRow
         
-        label.font = UIFont.systemFont(ofSize: 22, weight: .regular)
-        label.textColor = label.text == "World" ? .systemGreen : .label
+        label.font = UIFont.rounded(ofSize: 22, weight: .regular)
+        label.textColor = label.text == "World" ? AppColors.nasauurple : .label
         
         
         return label

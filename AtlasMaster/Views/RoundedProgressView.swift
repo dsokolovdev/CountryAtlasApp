@@ -29,7 +29,7 @@ final class RoundedProgressView: UIView {
         clipsToBounds = true
 
         trackView.backgroundColor = UIColor.systemGray6.withAlphaComponent(0.3)
-        fillView.backgroundColor = UIColor.blue.withAlphaComponent(0.8)
+        fillView.backgroundColor = AppColors.lightBlue
 
         addSubview(trackView)
         addSubview(fillView)
