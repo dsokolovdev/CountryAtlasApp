@@ -164,9 +164,9 @@ final class StatsCell: UICollectionViewCell {
         toLearnProgressLabel.text = String(format: "%.1f", stats.toLearnProgress * 100)
         
                 if stats.name == "World" {
-                    progressView.setFillColor(.purple.withAlphaComponent(0.8))
+                    progressView.setFillColor(AppColors.nasauurple.withAlphaComponent(0.8))
                 } else {
-                    progressView.setFillColor(.blue.withAlphaComponent(0.8))
+                    progressView.setFillColor(AppColors.darkblue.withAlphaComponent(0.8))
                 }
         
           //  progressView.progressTintColor = stats.name == "World" ? .purple.withAlphaComponent(0.8) : .blue.withAlphaComponent(0.8)
@@ -179,11 +179,11 @@ final class StatsCell: UICollectionViewCell {
         
         //print(stats.name, stats.learned, stats.toLearn, (stats.learnedProgress * 10).rounded() / 10, (stats.toLearnProgress * 10).rounded() / 10 )
         
-        learnedProgressLabel.textColor = stats.learnedProgress > 0 ? .systemGreen : .systemGreen.withAlphaComponent(0.5)
-        toLearnProgressLabel.textColor = stats.toLearnProgress < 1 ? .systemYellow : .systemYellow.withAlphaComponent(0.5)
-        percentLearnedLabel.textColor = stats.learnedProgress > 0 ? .systemGreen.withAlphaComponent(0.8) : .systemGreen.withAlphaComponent(0.5)
-        percentToLearnLabel.textColor = stats.toLearnProgress < 1 ? .systemYellow.withAlphaComponent(0.8) : .systemYellow.withAlphaComponent(0.5)
-        dashLabel.textColor = stats.learnedProgress > 0 ? .tertiaryLabel : .systemGray5
+        learnedProgressLabel.textColor = stats.learnedProgress > 0 ? AppColors.wildgreen : AppColors.wildgreen.withAlphaComponent(0.5)
+        toLearnProgressLabel.textColor = stats.toLearnProgress < 1 ? AppColors.brightyellow : AppColors.brightyellow.withAlphaComponent(0.5)
+        percentLearnedLabel.textColor = stats.learnedProgress > 0 ? AppColors.wildgreen.withAlphaComponent(0.8) : AppColors.wildgreen.withAlphaComponent(0.5)
+        percentToLearnLabel.textColor = stats.toLearnProgress < 1 ? AppColors.brightyellow.withAlphaComponent(0.8) : AppColors.brightyellow.withAlphaComponent(0.5)
+        dashLabel.textColor = stats.learnedProgress > 0 ? AppColors.lightGrey : AppColors.lightGrey.withAlphaComponent(0.5)
     }
     
 }

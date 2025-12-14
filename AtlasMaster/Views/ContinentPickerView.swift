@@ -88,8 +88,8 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
         label.text = continents[row].name
         //let isSelected = row == selectedRow
         
-        label.font = UIFont.rounded(ofSize: 22, weight: .regular)
-        label.textColor = label.text == "World" ? AppColors.nasauurple : .label
+        label.font = label.text == "World" ? UIFont.rounded(ofSize: 22, weight: .medium) : UIFont.rounded(ofSize: 22, weight: .regular)
+        label.textColor = label.text == "World" ? AppColors.darkblue : .label
         
         
         return label

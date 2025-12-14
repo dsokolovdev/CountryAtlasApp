@@ -33,7 +33,7 @@ final class StudyModeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        configureNavigationTitle()
         
         
         setupNavigationBar()
@@ -43,14 +43,15 @@ final class StudyModeViewController: UIViewController {
         
         studyModeSegmentedControl.selectedSegmentIndex = selectedModeindex
         selectRegion(initialRegion)
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
+        setColors()
     }
 }
 //MARK: -  Setup UI
 extension StudyModeViewController {
     
     private func setupNavigationBar() {
-        title = "Select Study Mode"
+        title = "Study Mode"
         
         // Кнопка "Done" (галочка)
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -104,8 +105,8 @@ extension StudyModeViewController {
         let activeColor = UIColor.label
         let inactiveColor = UIColor.tertiaryLabel
         let size: CGFloat = 16 * scaleFactor
-        let activeFont = UIFont.systemFont(ofSize: size, weight: .medium)
-        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .regular)
+        let activeFont = UIFont.rounded(ofSize: size, weight: .medium)
+        let inactiveFont = UIFont.rounded(ofSize: size, weight: .medium)
         
         let items = ["Learning", "Testing"]
         let segmentedControl = UISegmentedControl(items: items)
@@ -219,10 +220,10 @@ extension StudyModeViewController {
     //Change color of segmented control base on selection
     func setColors() {
         let currentIndex = studyModeSegmentedControl.selectedSegmentIndex
-        let size: CGFloat = 15
+        let size: CGFloat = 16
         let inactiveColor = UIColor.secondaryLabel
-        let activeColor = currentIndex == 0 ? UIColor.systemBlue : UIColor.systemRed
-        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .regular)
+        let activeColor = currentIndex == 0 ? AppColors.marine : AppColors.coolred
+        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .medium)
         let activeFont = UIFont.systemFont(ofSize: size, weight: .medium)
         
         studyModeSegmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
@@ -242,4 +243,22 @@ extension StudyModeViewController {
         continentPicker.selectContinent(named: name)
     }
     
+}
+
+extension StudyModeViewController {
+   
+    private func configureNavigationTitle() {
+        let appearance = UINavigationBarAppearance()
+        //appearance.configureWithOpaqueBackground()
+       // appearance.backgroundColor = .systemBackground
+
+        appearance.titleTextAttributes = [
+            .font: UIFont.rounded(ofSize: 18, weight: .medium),
+            .foregroundColor: UIColor.label
+        ]
+
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+    }
 }

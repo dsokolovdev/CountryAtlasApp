@@ -5,7 +5,7 @@
 //  Created by Dmitri  on 08.12.25.
 //
 
-
+import UIKit
 
 //Selection in StudyModeViewController: mode - segmented control, region - picker
 struct StudyConfiguration: Codable {
@@ -17,6 +17,35 @@ enum StudyMode: Int, Codable {
     case learning
     case testing
 }
+
+enum TestingAspect {
+    case capital
+    case country
+    case flag
+    
+    var iconName: String {
+        switch self {
+        case .capital: return "building.2.fill"
+        case .country: return "globe.fill"
+        case .flag: return "flag.fill"
+        }
+    }
+}
+
+
+//???
+struct TestQuestion {
+    let country: Country
+    let options: [TestOption]
+    let correctIndex: Int
+}
+
+struct TestOption {
+    let title: String?
+    let image: UIImage?
+}
+
+
 
 //picker data - Picker Continent
 enum Region: Codable {

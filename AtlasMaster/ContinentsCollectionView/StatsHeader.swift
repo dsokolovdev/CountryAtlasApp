@@ -24,6 +24,7 @@ final class StatsHeader: UICollectionReusableView {
         img.image = image.withRenderingMode(.alwaysTemplate)
         img.tintColor = .systemBlue
         img.contentMode = .scaleAspectFit
+        img.isHidden = true
         return img
     }()
     
@@ -63,8 +64,8 @@ final class StatsHeader: UICollectionReusableView {
     
     func configure(name: String, progress: Double) {
         nameLabel.text = name
-        starImage.alpha = progress > 0.0 ? 1 : 0
-        starImage.image = progress == 1.0 ? UIImage(systemName: "star.fill") : (progress >= 0.5 ? UIImage(systemName: "star.leadinghalf.filled") : UIImage(systemName: "star"))
+//        starImage.alpha = progress > 0.0 ? 1 : 0
+//        starImage.image = progress == 1.0 ? UIImage(systemName: "star.fill") : (progress >= 0.5 ? UIImage(systemName: "star.leadinghalf.filled") : UIImage(systemName: "star"))
         
         if nameLabel.text == "World" {
             nameLabel.textColor  = progress > 0 ? .blue : .blue.withAlphaComponent(0.5)

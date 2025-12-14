@@ -31,33 +31,38 @@ final class BottomControlBar: UIView {
     }
     
     enum TestingSegment: Int {
-        case capital = 0
-        case country
-        case flag
-        case progress
+        case test = 0
+        case fail
+        case result
         
         var segment: Int { rawValue }
         
         var title: String {
             switch self {
-            case .capital:
-                return "Capitals"
-            case .country:
-                return "Countries"
-            case .flag:
-                return "Flags"
-            case .progress:
+            case .test:
+                return "Testing"
+            case .fail:
+                return "Review"
+            case .result:
                 return "Results"
             }
         }
     }
+    
+    private enum TestingIconStyle {
+        case inactive
+        case test
+        case fail
+        case result
+    }
+
     
     var currentLearningSegment: LearningSegment {
         LearningSegment(rawValue: learningSegment.selectedSegmentIndex) ?? .toLearn
     }
     
     var currentTestingSegment: TestingSegment {
-        TestingSegment(rawValue: testingSegment.selectedSegmentIndex) ?? .capital
+        TestingSegment(rawValue: testingSegment.selectedSegmentIndex) ?? .test
     }
 
     var mode: Mode = .learning {
@@ -65,7 +70,7 @@ final class BottomControlBar: UIView {
     }
     
     var preferredWidth: CGFloat {
-        let count = (mode == .learning) ? 3 : 4
+        let count = (mode == .learning) ? 3 : 3
         return CGFloat(count) * 72
     }
     
@@ -88,12 +93,17 @@ final class BottomControlBar: UIView {
     }()
 
     private let testingSegment: UISegmentedControl = {
-        let capital = UIImage(systemName: "house.and.flag.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
-        let country = UIImage(systemName: "globe.europe.africa.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
-        let flag = UIImage(systemName: "flag.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
-        let progress = UIImage(systemName: "trophy.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        let inactiveConfig = UIImage.SymbolConfiguration(paletteColors: [.systemGray, .lightGray])
+        let testActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.deepgreen, AppColors.greyblue])
+        let failActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.coolred, AppColors.greyblue])
+        let resultActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.marine, AppColors.greyblue])
+        
+        let test = UIImage(systemName: "checklist", withConfiguration: testActiveConfig)
+        let fail = UIImage(systemName: "text.badge.xmark", withConfiguration: failActiveConfig)
+        let result = UIImage(systemName: "chart.bar.horizontal.page", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+       // let progress = UIImage(systemName: "trophy.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
 
-        let sc = UISegmentedControl(items: [capital!, country!, flag!, progress!])
+        let sc = UISegmentedControl(items: [test!, fail!, result!])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
         sc.selectedSegmentTintColor = .systemGray6
@@ -190,34 +200,40 @@ final class BottomControlBar: UIView {
         }
 
         let inactiveColor = AppColors.greyblue.withAlphaComponent(0.5)
-        let size: CGFloat = 16 * scaleFactor
+        let size: CGFloat = 19 * scaleFactor
 
         learningSegment.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: UIFont.systemFont(ofSize: size, weight: .semibold)], for: .normal)
         learningSegment.setTitleTextAttributes([.foregroundColor: activeColor, .font: UIFont.systemFont(ofSize: size, weight: .bold)], for: .selected)
     }
     
+    private func testingIcon(for style: TestingIconStyle, systemName: String) -> UIImage {
+        let size: CGFloat = 19 * scaleFactor
+        let config: UIImage.SymbolConfiguration
+        let activeConfig = UIImage.SymbolConfiguration(pointSize: size, weight: .semibold)
+        let inactiveConfig = UIImage.SymbolConfiguration(pointSize: size, weight: .medium)
+        //let finalConfig = config.applying(largeConfig)
+
+        switch style {
+        case .inactive:
+            config = UIImage.SymbolConfiguration(paletteColors: [.systemGray, .lightGray]).applying(inactiveConfig)
+        case .test:
+            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.darkblue, AppColors.greyblue]).applying(activeConfig)
+        case .fail:
+            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.coolred, AppColors.greyblue]).applying(activeConfig)
+        case .result:
+            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.marine, AppColors.greyblue]).applying(activeConfig)
+        }
+        return UIImage(systemName: systemName, withConfiguration: config)!
+    }
+    
     private func updateTestingColors() {
         let index = testingSegment.selectedSegmentIndex
         
-        let activeColor: UIColor
-        switch index {
-        case TestingSegment.capital.rawValue:
-            activeColor = .systemOrange
-        case TestingSegment.country.rawValue:
-            activeColor = .systemPurple
-        case TestingSegment.flag.rawValue:
-            activeColor = .systemIndigo
-        case TestingSegment.progress.rawValue:
-            activeColor = .systemBlue
-        default:
-            activeColor = .label
-        }
+        testingSegment.setImage(testingIcon(for: index == TestingSegment.test.rawValue ? .test : .inactive, systemName: "checklist"), forSegmentAt: TestingSegment.test.rawValue)
+        testingSegment.setImage(testingIcon(for: index == TestingSegment.fail.rawValue ? .fail : .inactive, systemName: "text.badge.xmark"), forSegmentAt: TestingSegment.fail.rawValue)
+        testingSegment.setImage(testingIcon(for: index == TestingSegment.result.rawValue ? .result : .inactive, systemName: "chart.bar.horizontal.page"), forSegmentAt: TestingSegment.result.rawValue)
         
-        let inactiveColor: UIColor = AppColors.greyblue.withAlphaComponent(0.5)
-        let size: CGFloat = 16 * scaleFactor
         
-        testingSegment.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: UIFont.systemFont(ofSize: size, weight: .semibold)], for: .normal)
-        testingSegment.setTitleTextAttributes([.foregroundColor: activeColor, .font: UIFont.systemFont(ofSize: size, weight: .bold)], for: .selected)
     }
     
     @objc private func learningModeChanged(_ sender: UISegmentedControl) {

@@ -14,13 +14,16 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         case list   //segments 0, 1
         case stats  //segments 2
     }
+    private var lightHaptic: UIImpactFeedbackGenerator!
     private var displayMode: DisplayMode = .list
     private let atlasModel: AtlasModel
     private var collectionView: UICollectionView!
     //var onSegmentChanged: ((Int) -> Int)
     
     private var settingsButton: UIBarButtonItem!
+    private var resetButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
+    private var testAspectButton: UIBarButtonItem!
     private var studyProgressSegmentedControl: UISegmentedControl!
     private var bottomControl: BottomControlBar!
     private var bottomControlStack: UIStackView!
@@ -43,6 +46,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.isToolbarHidden = true
+        configureNavigationTitle()
         
         
         //Load saved studyConfigs: region, mode
@@ -50,6 +54,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         atlasModel.loadEntireWorlddData()
         
         setupnavigationBar()
+        setupRightButtonItems()
         //setupBottomBar()
         //setupNavigationBarSegmentedControl()
         setupCollectionView()
@@ -68,6 +73,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         reloadSnapshot()
         
         updateUIForConfig()
+        setResetButtonState()
         
         
         //title = "AtlasMaster"
@@ -81,6 +87,13 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
             bottom: 0,
             trailing: constant
         )
+        
+        if #available(iOS 17.5, *) {
+            lightHaptic = UIImpactFeedbackGenerator(style: .light, view: view)
+        } else {
+            // Fallback for earlier iOS versions (no view-based initializer available).
+            lightHaptic = UIImpactFeedbackGenerator(style: .light)
+        }
     }
 }
 
@@ -127,8 +140,15 @@ extension AtlasViewController {
     }
     
     func setupnavigationBar(){
-        settingsButton = UIBarButtonItem(image: UIImage(systemName: "gearshape"), style: .plain, target: self, action: #selector(settingsButtonTapped))
-        modeButton = UIBarButtonItem(image: UIImage(systemName: "book"), style: .plain, target: self, action: #selector(modeButtonTapped))
+        let space = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+        settingsButton = UIBarButtonItem(image: UIImage(systemName: "gearshape.fill"), style: .plain, target: self, action: #selector(settingsButtonTapped))
+        resetButton = UIBarButtonItem(image: UIImage(systemName: "arrow.counterclockwise", withConfiguration: config), style: .plain, target: self, action: #selector(resetButtonTapped))
+        modeButton = UIBarButtonItem(image: UIImage(systemName: "book.fill"), style: .plain, target: self, action: #selector(modeButtonTapped))
+        testAspectButton = UIBarButtonItem(image: UIImage(systemName: atlasModel.testingAspect.iconName), menu: makeMenu())
+        
+        
+        
         //        let continentLabel = UILabel()
         //        continentLabel.text = "Continent"
         //        continentLabel.textAlignment = .center
@@ -137,8 +157,57 @@ extension AtlasViewController {
         //        stackView.axis = .horizontal
         //        stackView.spacing = 8
         //        navigationItem.titleView = stackView
-        navigationItem.leftBarButtonItem = settingsButton
-        navigationItem.rightBarButtonItem = modeButton
+        
+        navigationItem.leftBarButtonItems = [settingsButton, space, resetButton]
+        navigationItem.rightBarButtonItems = [ modeButton]
+        settingsButton.tintColor = AppColors.greyblue
+        resetButton.tintColor = AppColors.greyblue
+        testAspectButton.tintColor = AppColors.nasauurple
+    }
+    
+    func setupRightButtonItems() {
+        let rightItems: [UIBarButtonItem] = atlasModel.currentConfig.mode ==  .learning ? [ modeButton] : [modeButton, testAspectButton]
+        navigationItem.rightBarButtonItems = rightItems
+    }
+    
+    func makeMenu() -> UIMenu {
+        let activeColor = AppColors.nasauurple
+        let inactiveColor = AppColors.greyblue.withAlphaComponent(0.7)
+        
+        let capitalImage = UIImage(systemName: "building.2.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [atlasModel.testingAspect == .capital ? activeColor : inactiveColor]))
+        let countryImage = UIImage(systemName: "globe.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [atlasModel.testingAspect == .country ? activeColor : inactiveColor]))
+        let flagImage = UIImage(systemName: "flag.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [atlasModel.testingAspect == .flag ? activeColor : inactiveColor]))
+        
+        
+        let capitalAction = UIAction(title: "Capitals", image: capitalImage, state: atlasModel.testingAspect == .capital ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.atlasModel.testingAspect = .capital
+            self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
+            self.testAspectButton.menu = self.makeMenu()
+        }
+        
+        let countryAction = UIAction(title: "Countries", image: countryImage, state: atlasModel.testingAspect == .country ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.atlasModel.testingAspect = .country
+            self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
+            self.testAspectButton.menu = self.makeMenu()
+        }
+        let flagAction = UIAction(title: "Flags", image: flagImage, state: atlasModel.testingAspect == .flag ? .on : .off) { [weak self] _ in
+            guard let self = self else { return }
+            self.atlasModel.testingAspect = .flag
+            self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
+            self.testAspectButton.menu = self.makeMenu()
+        }
+        
+        func attributedTitle(_ text: String, isActive: Bool) -> NSAttributedString {
+            NSAttributedString(string: text, attributes: [.foregroundColor: isActive ? activeColor : inactiveColor])
+        }
+        
+        capitalAction.setValue(attributedTitle("Capitals", isActive: atlasModel.testingAspect == .capital), forKey: "attributedTitle")
+        countryAction.setValue(attributedTitle("Countries", isActive: atlasModel.testingAspect == .country), forKey: "attributedTitle")
+        flagAction.setValue(attributedTitle("Flags", isActive: atlasModel.testingAspect == .flag), forKey: "attributedTitle")
+        
+        return UIMenu(title: "Testing Items", children: [capitalAction, countryAction, flagAction])
     }
     
     //MARK: - Setup CollectionView
@@ -160,6 +229,7 @@ extension AtlasViewController {
                 self.atlasModel.markCountryAsLearned(at: indexPath)
                 //self.collectionView.reloadData()
                 self.reloadSnapshot()
+                self.setResetButtonState()
                 
                 completion(true)
             }
@@ -179,12 +249,13 @@ extension AtlasViewController {
             
             guard self.atlasModel.filterMode == 1 else { return nil }
             
-            // зелёная кнопка "Learned"
+            //желтая кнопка "UnLearned"
             let unlearnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
                 
                 self.atlasModel.markCountryAsLearned(at: indexPath)
                 self.reloadSnapshot()
                 //self.collectionView.reloadData()
+                self.setResetButtonState()
 
                 completion(true)
             }
@@ -280,20 +351,22 @@ extension AtlasViewController {
         bottomControl = BottomControlBar()
 
         let searchButton = UIButton(type: .system)
-        searchButton.setImage(UIImage(systemName: "magnifyingglass"), for: .normal)
+        let image = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        searchButton.setImage(image, for: .normal)
         searchButton.tintColor = .label
         searchButton.backgroundColor = .systemBackground
-        searchButton.layer.cornerRadius = 25
+        searchButton.layer.cornerRadius = 28
         searchButton.translatesAutoresizingMaskIntoConstraints = false
         searchButton.layer.shadowColor = UIColor.label.cgColor
         searchButton.layer.shadowOpacity = 0.15
         searchButton.layer.shadowRadius = 6
         searchButton.layer.shadowOffset = CGSize(width: 0, height: 2.5)
         searchButton.layer.masksToBounds = false
+        searchButton.tintColor = AppColors.greyblue
 
         NSLayoutConstraint.activate([
-            searchButton.widthAnchor.constraint(equalToConstant: 50),
-            searchButton.heightAnchor.constraint(equalToConstant: 50)
+            searchButton.widthAnchor.constraint(equalToConstant: 56),
+            searchButton.heightAnchor.constraint(equalToConstant: 56)
         ])
 
         bottomControlStack = UIStackView(arrangedSubviews: [bottomControl, searchButton])
@@ -314,7 +387,7 @@ extension AtlasViewController {
             //bottomControlStack.heightAnchor.constraint(equalToConstant: 55),
 
             bottomControlWidthConstraint,
-            bottomControl.heightAnchor.constraint(equalToConstant: 50) //
+            bottomControl.heightAnchor.constraint(equalToConstant: 56) //
         ])
     }
     
@@ -380,6 +453,29 @@ extension AtlasViewController {
         
     }
     
+    @objc func resetButtonTapped(){
+        let alert = UIAlertController(
+            title: "Reset Progress",
+            message: "Are you sure you want to reset all learning progress?",
+            preferredStyle: .alert)
+        
+        let yesAction = UIAlertAction(title: "Yes", style: .destructive) { [weak self]_ in
+            guard let self = self else { return }
+            lightHaptic?.impactOccurred()
+            atlasModel.resetLearningProgress()
+            reloadSnapshot()
+            setResetButtonState()
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
+        alert.addAction(yesAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+        
+    }
+    
     
     @objc func modeButtonTapped() {
         guard let world = atlasModel.world else { return }
@@ -402,6 +498,7 @@ extension AtlasViewController {
             self.bottomControl.mode = mode == .learning ? .learning : .testing
             self.bottomControlWidthConstraint.constant = self.bottomControl.preferredWidth
             //self?.collectionView.reloadData()
+            self.setupRightButtonItems()
             
         }
         
@@ -443,18 +540,15 @@ extension AtlasViewController {
             guard let self else { return }
 
             switch segment {
-            case .capital:
+            case .test:
                 self.title = segment.title
                 print("Testing: Capital")
-            case .country:
+            case .fail:
                 self.title = segment.title
                 print("Testing: Country")
-            case .flag:
+            case .result:
                 self.title = segment.title
                 print("Testing: Flag")
-            case .progress:
-                self.title = segment.title
-                print("Testing: Progress")
             }
         }
     }
@@ -486,10 +580,11 @@ extension AtlasViewController {
     private func updateUIForConfig() {
         let mode = atlasModel.currentConfig.mode
         
-        modeButton.image = atlasModel.currentConfig.mode == .learning ? UIImage(systemName: "book") : UIImage(systemName: "person.fill.questionmark")
-        modeButton.tintColor = atlasModel.currentConfig.mode == .learning ? .systemBlue : .systemRed
+        modeButton.image = atlasModel.currentConfig.mode == .learning ? UIImage(systemName: "book.fill") : UIImage(systemName: "person.fill.questionmark")
+        modeButton.tintColor = atlasModel.currentConfig.mode == .learning ? AppColors.marine : AppColors.coolred
         
         bottomControl.mode = (mode == .learning) ? .learning : .testing
+        bottomControlWidthConstraint.constant = bottomControl.preferredWidth
         
         switch mode {
         case .learning:
@@ -656,3 +751,26 @@ extension AtlasViewController {
 }
 
 
+extension AtlasViewController {
+   
+    private func configureNavigationTitle() {
+        let appearance = UINavigationBarAppearance()
+        //appearance.configureWithOpaqueBackground()
+       // appearance.backgroundColor = .systemBackground
+
+        appearance.titleTextAttributes = [
+            .font: UIFont.rounded(ofSize: 18, weight: .medium),
+            .foregroundColor: UIColor.label
+        ]
+
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+    }
+}
+
+extension AtlasViewController {
+    func setResetButtonState() {
+        resetButton.isEnabled =  atlasModel.startedLearning ? true : false
+    }
+}

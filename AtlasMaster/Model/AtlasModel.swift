@@ -7,8 +7,10 @@
 import UIKit
 
 final class AtlasModel {
+    var testingAspect: TestingAspect = .capital
     var currentConfig = StudyConfiguration(mode: .learning, region: .world)
     var world: World?
+    var startedLearning: Bool = false
 //    var currentWorld: World? {
 //        //Define continent which is selected on picker in StudyModeViewController
 //        let continentName: String
@@ -161,6 +163,34 @@ final class AtlasModel {
         return [worldStats] + sortedContinents
     }
     
+    //MARK: - Update Reset Button state
+    private func updateStartedLearningFlag() {
+        guard let world else {
+            startedLearning = false
+            return
+        }
+        
+        startedLearning = world.continents
+            .flatMap { $0.countries }
+            .contains { $0.isLearned }
+    }
+    
+    func resetLearningProgress() {
+        world?.continents.indices.forEach { cIndex in
+            world?.continents[cIndex].countries.indices.forEach { countryIndex in
+                world?.continents[cIndex].countries[countryIndex].isLearned = false
+            }
+        }
+
+        updateStartedLearningFlag()
+
+        if let world {
+            dataStore.saveWorldData(world)
+        }
+
+        onWorldUpdated?()
+    }
+    
     //MARK: - Update Study Mode logyc
     func updateFilterMode(_ mode: Int) {
         self.filterMode = mode
@@ -189,7 +219,7 @@ final class AtlasModel {
 
         // 3. Обновляем
         world?.continents[continentIndex].countries[countryIndex].isLearned.toggle()
-        
+        updateStartedLearningFlag()
         // ✅ Save Progress
            if let world {
                dataStore.saveWorldData(world)
@@ -223,6 +253,7 @@ final class AtlasModel {
     func loadEntireWorlddData() {
         if let savedWorld = dataStore.loadWorldData() {
             world = savedWorld
+            updateStartedLearningFlag()
         } else {
             loadCountriesFromAPI()
         }
