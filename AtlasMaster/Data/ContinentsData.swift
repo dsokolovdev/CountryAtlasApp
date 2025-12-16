@@ -35,7 +35,7 @@ struct Country: Equatable, Comparable, Codable {
     let capital: String
     let flag: String
     var isLearned: Bool
-    var isTestPassed: Bool = false
+    var testResults: [TestingAspect: TestResult]
     
     static func == (lhs: Country, rhs: Country) -> Bool {
         lhs.name == rhs.name && lhs.capital == rhs.capital && lhs.flag == rhs.flag

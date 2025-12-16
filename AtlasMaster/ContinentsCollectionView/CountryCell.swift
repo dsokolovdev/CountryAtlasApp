@@ -5,62 +5,10 @@
 //  Created by Dmitri  on 09.12.25.
 //
 import UIKit
-//final class CountryCell: UICollectionViewCell {
-//    
-//    private let indexLabel = UILabel()
-//    private let flagLabel = UILabel()
-//    private let nameLabel = UILabel()
-//    private let capitalLabel = UILabel()
-//    
-//    override init(frame: CGRect) {
-//        super.init(frame: frame)
-//        setupUI()
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//    
-//    func configure(index: Int, flag: String, name: String, capital: String) {
-//        indexLabel.text = "\(index)"
-//        flagLabel.text = flag
-//        nameLabel.text = name
-//        capitalLabel.text = capital
-//    }
-//    
-//    private func setupUI() {
-//        indexLabel.font = .systemFont(ofSize: 14, weight: .light)
-//        flagLabel.font = .systemFont(ofSize: 50)
-//        nameLabel.font = .systemFont(ofSize: 20, weight: .semibold)
-//        capitalLabel.font = .systemFont(ofSize: 16, weight: .regular)
-//        capitalLabel.textColor = .secondaryLabel
-//        
-//        let textStack = UIStackView(arrangedSubviews: [nameLabel, capitalLabel])
-//        textStack.axis = .vertical
-//        textStack.alignment = .fill
-//        textStack.spacing = 2
-//        
-//        let mainStack = UIStackView(arrangedSubviews: [indexLabel, flagLabel, textStack])
-//        mainStack.axis = .horizontal
-//        mainStack.spacing = 8
-//        mainStack.alignment = .fill
-//        
-//        contentView.addSubview(mainStack)
-//        mainStack.translatesAutoresizingMaskIntoConstraints = false
-//        
-//        NSLayoutConstraint.activate([
-//            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-//            mainStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-//            mainStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-//            mainStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
-//        ])
-//    }
-//}
-
 
 final class CountryCell: UICollectionViewCell {
     static let reusedId = "CountryCell"
-    
+
     private let indexLabel: UILabel = {
         let lbl = UILabel()
         lbl.font = .rounded(ofSize: 14, weight: .light)
@@ -127,10 +75,45 @@ final class CountryCell: UICollectionViewCell {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    func configure(index: Int, flag: String, name: String, capital: String) {
-        indexLabel.text = "\(index + 1)"
-        flagLabel.text = flag
-        nameLabel.text = name
+    func configure(country: Country, testingAspect: TestingAspect, isTestingMode: Bool, currentSegment: Int) {
+        
+        let countryName = country.name
+        let capital = country.capital
+        let flag = country.flag
+        
+        nameLabel.text = countryName
         capitalLabel.text = capital
+        flagLabel.text = flag
+
+        
+        let displayedCountry = currentSegment == 0 ? maskString(originalString: countryName) : countryName
+        let displayedCapital = currentSegment == 0 ? maskString(originalString: capital) : capital
+        let displayedFlag = currentSegment == 0 ? "🏳️" : flag
+        
+        guard isTestingMode else { return }
+        
+        switch testingAspect {
+        case .country:
+            nameLabel.text = displayedCountry
+        case .capital:
+            capitalLabel.text = displayedCapital
+        case .flag:
+            flagLabel.text =  displayedFlag
+        }
+    }
+}
+
+extension CountryCell {
+    func maskString(originalString: String) -> String {
+        var newString = ""
+        let components = originalString.split(separator: " ")
+        for (index,component) in components.enumerated() {
+            let maskedComponent = String(repeating: "*", count: component.count)
+            newString += maskedComponent
+            if index != components.count - 1 {
+                newString += " "
+            }
+        }
+        return newString
     }
 }

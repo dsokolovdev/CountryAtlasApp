@@ -18,11 +18,6 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
         return continents[row].name
     }
     
-//    override init(frame: CGRect) {
-//        super.init(frame: frame)
-//        setup()
-//    }
-    
     // главный init — сюда передаём континенты
         init(continents: [Continent]) {
             self.continents = continents
@@ -33,11 +28,6 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-//    required init?(coder: NSCoder) {
-//        super.init(coder: coder)
-//        setup()
-//    }
     
     private func setup() {
         backgroundColor = .clear
@@ -67,20 +57,6 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     }
     
     // MARK: - Picker Delegate
-    
-    //    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-    //        return continents[row]
-    //    }
-    
-    //    func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
-    //        let title = continents[row]
-    //        let anyAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 18, weight: .medium)]
-    //        let worldAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 18, weight: .bold), .foregroundColor: UIColor.systemGreen]
-    //        let attributes =  title == "World" ? worldAttributes : anyAttributes
-    //        let myTitle = NSAttributedString(string: title, attributes: attributes)
-    //        return myTitle
-    //    }
-    
     func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
         let label = UILabel()
         label.textAlignment = .center
@@ -97,8 +73,6 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         currentIndex =  row
-        //selectedContinent = continents[row].name
-        //pickerView.reloadComponent(component)
     }
     
     //MARK: - Helpers
@@ -107,7 +81,6 @@ class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDelegate 
         guard index >= 0 && index < continents.count else { return }
         currentIndex = index
         picker.selectRow(index, inComponent: 0, animated: false)
-        //selectedContinent = continents[index].name
     }
     
     /// Выбрать континент по имени

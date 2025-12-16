@@ -18,35 +18,6 @@ enum StudyMode: Int, Codable {
     case testing
 }
 
-enum TestingAspect {
-    case capital
-    case country
-    case flag
-    
-    var iconName: String {
-        switch self {
-        case .capital: return "building.2.fill"
-        case .country: return "globe.fill"
-        case .flag: return "flag.fill"
-        }
-    }
-}
-
-
-//???
-struct TestQuestion {
-    let country: Country
-    let options: [TestOption]
-    let correctIndex: Int
-}
-
-struct TestOption {
-    let title: String?
-    let image: UIImage?
-}
-
-
-
 //picker data - Picker Continent
 enum Region: Codable {
     case world

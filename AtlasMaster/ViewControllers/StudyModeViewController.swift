@@ -39,7 +39,6 @@ final class StudyModeViewController: UIViewController {
         setupNavigationBar()
         setupContinentPicker()
         setupStudyMode()
-        //setupNavigationBarSegmentedControl()
         
         studyModeSegmentedControl.selectedSegmentIndex = selectedModeindex
         selectRegion(initialRegion)
@@ -51,7 +50,7 @@ final class StudyModeViewController: UIViewController {
 extension StudyModeViewController {
     
     private func setupNavigationBar() {
-        title = "Study Mode"
+        title = "Study Mode Selection"
         
         // Кнопка "Done" (галочка)
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -66,16 +65,6 @@ extension StudyModeViewController {
         studyModeSegmentedControl.selectedSegmentIndex = 0
         studyModeSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
         
-//        let currentIndex = studyModeSegmentedControl.selectedSegmentIndex
-//        let size: CGFloat = 15
-//        let inactiveColor = UIColor.secondaryLabel
-//        let activeColor = currentIndex == 0 ? UIColor.systemBlue : UIColor.systemRed
-//        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .regular)
-//        let activeFont = UIFont.systemFont(ofSize: size, weight: .medium)
-//        
-//        studyModeSegmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
-//        studyModeSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
-        
         studyModeSegmentedControl.addTarget(self, action: #selector(studyModeChanged), for: .valueChanged)
         
         view.addSubview(studyModeSegmentedControl)
@@ -87,64 +76,6 @@ extension StudyModeViewController {
         ])
         
         setColors()
-    }
-    
-    func setupNavigationBarSegmentedControl() {
-        let barView = UIView()
-        barView.translatesAutoresizingMaskIntoConstraints = false
-        barView.backgroundColor = .clear
-        barView.layer.cornerRadius = 22 * scaleFactor
-        view.addSubview(barView)
-        
-        barView.layer.shadowColor = UIColor.label.cgColor
-        barView.layer.shadowOpacity = 0.05
-        barView.layer.shadowOffset = CGSize(width: 0, height: 2.5)
-        barView.layer.shadowRadius = 4
-        barView.layer.masksToBounds = false
-        
-        let activeColor = UIColor.label
-        let inactiveColor = UIColor.tertiaryLabel
-        let size: CGFloat = 16 * scaleFactor
-        let activeFont = UIFont.rounded(ofSize: size, weight: .medium)
-        let inactiveFont = UIFont.rounded(ofSize: size, weight: .medium)
-        
-        let items = ["Learning", "Testing"]
-        let segmentedControl = UISegmentedControl(items: items)
-        
-        segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.widthAnchor.constraint(equalToConstant: 140).isActive = true
-        segmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
-        segmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
-        segmentedControl.subviews.forEach { $0.backgroundColor = .systemBackground }
-        
-        // Add a target to handle segment changes
-        //segmentedControl.addTarget(self, action: #selector(studyModeChanged), for: .valueChanged)
-        
-        barView.addSubview(segmentedControl)
-        
-        //        NSLayoutConstraint.activate([
-        //            view.widthAnchor.constraint(equalToConstant: 140),
-        //            segmentedControl.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-        //            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-        //            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        //
-        //        ])
-        let scHeight: CGFloat = 32 * scaleFactor
-        let constant: CGFloat = 3 * scaleFactor
-        let barHeigh: CGFloat = 48 * scaleFactor
-        
-        NSLayoutConstraint.activate([
-            barView.heightAnchor.constraint(equalToConstant: barHeigh),
-            barView.widthAnchor.constraint(equalToConstant: 300),
-            barView.bottomAnchor.constraint(equalTo: glassView.topAnchor, constant: -20),
-            barView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            segmentedControl.centerYAnchor.constraint(equalTo: barView.centerYAnchor),
-            segmentedControl.leadingAnchor.constraint(equalTo: barView.leadingAnchor, constant: constant),
-            segmentedControl.trailingAnchor.constraint(equalTo: barView.trailingAnchor, constant: -constant),
-            segmentedControl.heightAnchor.constraint(equalToConstant: scHeight)
-        ])
-        
     }
     
     func setupContinentPicker() {
@@ -159,17 +90,11 @@ extension StudyModeViewController {
         glassView.layer.shadowOffset = .zero
         glassView.translatesAutoresizingMaskIntoConstraints = false
         
-//        var extended = world.continents
-//        extended.insert(Continent(name: "World", countries: []), at: 0)
-//        let modifiedWorld = World(continents: extended)
-        
-        
         var sortedContinents = world.continents.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         sortedContinents.insert(Continent(name: "World", countries: []), at: 0)
 
         continentPicker = ContinentPickerView(continents: sortedContinents)
         
-       // continentPicker = ContinentPickerView(continents: modifiedWorld.continents)
         continentPicker.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(glassView)
@@ -179,8 +104,6 @@ extension StudyModeViewController {
         NSLayoutConstraint.activate([
             glassView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
             glassView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-//            glassView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-//            glassView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             glassView.heightAnchor.constraint(equalToConstant: 160 * scaleFactor),
             glassView.widthAnchor.constraint(equalToConstant: 300 * scaleFactor),
             

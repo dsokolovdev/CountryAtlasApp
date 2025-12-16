@@ -62,15 +62,16 @@ final class StatsHeader: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(name: String, progress: Double) {
+    func configure(continent: ContinentStats) {
+        let learnedProgress = continent.learnedProgress
+        let name = continent.name
+        
         nameLabel.text = name
-//        starImage.alpha = progress > 0.0 ? 1 : 0
-//        starImage.image = progress == 1.0 ? UIImage(systemName: "star.fill") : (progress >= 0.5 ? UIImage(systemName: "star.leadinghalf.filled") : UIImage(systemName: "star"))
         
         if nameLabel.text == "World" {
-            nameLabel.textColor  = progress > 0 ? .blue : .blue.withAlphaComponent(0.5)
+            nameLabel.textColor  = learnedProgress > 0 ? .blue : .blue.withAlphaComponent(0.5)
         } else {
-            nameLabel.textColor  = progress > 0 ? .label : .tertiaryLabel
+            nameLabel.textColor  = learnedProgress > 0 ? .label : .tertiaryLabel
         }
         
         starImage.tintColor = name == "World" ? .purple : .blue

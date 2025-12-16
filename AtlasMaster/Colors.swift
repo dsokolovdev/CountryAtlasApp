@@ -27,5 +27,6 @@ enum AppColors {
     static let fuchsiablush          = UIColor(named: "FuchsiaBlush")!
     static let princetonorange       = UIColor(named: "PrincetonOrange")!
     static let infernoorange         = UIColor(named: "InfernoOrange")!
+    static let quaternaryfill        = UIColor(named: "QuternaryFillColor")!
     
 }

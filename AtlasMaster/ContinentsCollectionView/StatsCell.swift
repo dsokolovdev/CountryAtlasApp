@@ -9,17 +9,6 @@ import UIKit
 final class StatsCell: UICollectionViewCell {
     static let reusedId = "StatsCell"
     
-//    let progressView: UIProgressView = {
-//        let view = UIProgressView(progressViewStyle: .default)
-//        view.layer.cornerRadius = 20
-//        view.layer.borderWidth = 3
-//        view.layer.borderColor = UIColor.systemGray6.cgColor
-//        view .clipsToBounds = true
-//        //view.progressTintColor = .blue.withAlphaComponent(0.8)
-//        view.trackTintColor = .systemGray6.withAlphaComponent(0.3)
-//        return view
-//    }()
-    
     let progressView = RoundedProgressView()
     
     private let learnedProgressLabel: UILabel = {
@@ -92,18 +81,6 @@ final class StatsCell: UICollectionViewCell {
         return stack
     }()
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
-
-        //progressView.progressTintColor = nil
-        //progressView.setProgress(0, animated: false)
-    }
-    
-    override func layoutSubviews() {
-            super.layoutSubviews()
-           // progressView.setProgress(progressView.progress, animated: false)
-        }
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -154,51 +131,37 @@ final class StatsCell: UICollectionViewCell {
     }
     
     func configure(with stats: ContinentStats) {
-        progressView.layer.removeAllAnimations()
-        progressView.transform = .identity
+        let name = stats.name
+        let learnedProgress = stats.learnedProgress
+        let toLearnProgress = stats.toLearnProgress
+
         progressView.setProgress(0)
         
+        learnedProgressLabel.text = String(format: "%.1f", learnedProgress * 100 )
+        toLearnProgressLabel.text = String(format: "%.1f", toLearnProgress * 100)
         
-        
-        learnedProgressLabel.text = String(format: "%.1f", stats.learnedProgress * 100 )
-        toLearnProgressLabel.text = String(format: "%.1f", stats.toLearnProgress * 100)
-        
-                if stats.name == "World" {
-                    progressView.setFillColor(AppColors.nasauurple.withAlphaComponent(0.8))
-                } else {
-                    progressView.setFillColor(AppColors.darkblue.withAlphaComponent(0.8))
-                }
-        
-          //  progressView.progressTintColor = stats.name == "World" ? .purple.withAlphaComponent(0.8) : .blue.withAlphaComponent(0.8)
-        
-       // progressView.progress = Float(stats.learnedProgress)
-        //progressView.setProgress(0, animated: false)
-        
-        progressView.setProgress(CGFloat(stats.learnedProgress))
+        progressView.setProgress(CGFloat(learnedProgress))
         progressView.layoutIfNeeded()
         
-        //print(stats.name, stats.learned, stats.toLearn, (stats.learnedProgress * 10).rounded() / 10, (stats.toLearnProgress * 10).rounded() / 10 )
+        learnedProgressLabel.textColor = learnedProgress > 0 ? AppColors.wildgreen : AppColors.wildgreen.withAlphaComponent(0.5)
+        toLearnProgressLabel.textColor = toLearnProgress < 1 ? AppColors.brightyellow : AppColors.brightyellow.withAlphaComponent(0.5)
+        percentLearnedLabel.textColor = learnedProgress > 0 ? AppColors.wildgreen.withAlphaComponent(0.8) : AppColors.wildgreen.withAlphaComponent(0.5)
+        percentToLearnLabel.textColor = toLearnProgress < 1 ? AppColors.brightyellow.withAlphaComponent(0.8) : AppColors.brightyellow.withAlphaComponent(0.5)
+        dashLabel.textColor = learnedProgress > 0 ? AppColors.lightGrey : AppColors.lightGrey.withAlphaComponent(0.5)
         
-        learnedProgressLabel.textColor = stats.learnedProgress > 0 ? AppColors.wildgreen : AppColors.wildgreen.withAlphaComponent(0.5)
-        toLearnProgressLabel.textColor = stats.toLearnProgress < 1 ? AppColors.brightyellow : AppColors.brightyellow.withAlphaComponent(0.5)
-        percentLearnedLabel.textColor = stats.learnedProgress > 0 ? AppColors.wildgreen.withAlphaComponent(0.8) : AppColors.wildgreen.withAlphaComponent(0.5)
-        percentToLearnLabel.textColor = stats.toLearnProgress < 1 ? AppColors.brightyellow.withAlphaComponent(0.8) : AppColors.brightyellow.withAlphaComponent(0.5)
-        dashLabel.textColor = stats.learnedProgress > 0 ? AppColors.lightGrey : AppColors.lightGrey.withAlphaComponent(0.5)
+        if name == "World" {
+            progressView.setFillColor(AppColors.nasauurple.withAlphaComponent(0.8))
+        } else {
+            progressView.setFillColor(AppColors.darkblue.withAlphaComponent(0.8))
+        }
     }
     
 }
-
 
 extension UIFont {
     static func rounded(ofSize size: CGFloat, weight: UIFont.Weight = .medium ) -> UIFont {
         let base = UIFont.systemFont(ofSize: size, weight: weight)
         let descriptor = base.fontDescriptor.withDesign(.rounded)
-        return UIFont(descriptor: descriptor ?? base.fontDescriptor, size: size)
-    }
-    
-    static func monospaced(ofSize size: CGFloat, weight: UIFont.Weight = .medium) -> UIFont {
-        let base = UIFont.systemFont(ofSize: size, weight: weight)
-        let descriptor = base.fontDescriptor.withDesign(.monospaced)
         return UIFont(descriptor: descriptor ?? base.fontDescriptor, size: size)
     }
 }

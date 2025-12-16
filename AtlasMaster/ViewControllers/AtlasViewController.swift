@@ -14,12 +14,13 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         case list   //segments 0, 1
         case stats  //segments 2
     }
+    private let atlasModel: AtlasModel
     private var lightHaptic: UIImpactFeedbackGenerator!
     private var displayMode: DisplayMode = .list
-    private let atlasModel: AtlasModel
-    private var collectionView: UICollectionView!
-    //var onSegmentChanged: ((Int) -> Int)
+   // private let makeQuestion: TestQuestionViewController
     
+    //UI
+    private var collectionView: UICollectionView!
     private var settingsButton: UIBarButtonItem!
     private var resetButton: UIBarButtonItem!
     private var modeButton: UIBarButtonItem!
@@ -33,7 +34,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     private var snapshotStats: [ContinentStats] = []
     
     private var bottomControlWidthConstraint: NSLayoutConstraint!
-
+    
     init(model: AtlasModel) {
         self.atlasModel = model
         super.init(nibName: nil, bundle: nil)
@@ -55,8 +56,6 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         
         setupnavigationBar()
         setupRightButtonItems()
-        //setupBottomBar()
-        //setupNavigationBarSegmentedControl()
         setupCollectionView()
         setupBottomControlBar()
         bindBottomControlBar()
@@ -65,8 +64,6 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         
         atlasModel.onWorldUpdated = { [weak self] in
             DispatchQueue.main.async {
-                //self?.collectionView.reloadData()
-                //self?.applyLearningFilter()
                 self?.reloadSnapshot()
             }
         }
@@ -99,46 +96,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
 
 //MARK: - Setup UI
 extension AtlasViewController {
-    //MARK: - Setup SegmentedControl
-    func setupNavigationBarSegmentedControl() {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .clear
-        view.layer.cornerRadius = 22 * scaleFactor
-        
-        let activeColor = UIColor.label
-        let inactiveColor = UIColor.tertiaryLabel
-        let size: CGFloat = 16 * scaleFactor
-        let activeFont = UIFont.systemFont(ofSize: size, weight: .medium)
-        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .regular)
-        
-        let items = ["Info", "Map"]
-        let segmentedControl = UISegmentedControl(items: items)
-        
-        segmentedControl.selectedSegmentIndex = 0
-        segmentedControl.widthAnchor.constraint(equalToConstant: 140).isActive = true
-        segmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
-        segmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
-        segmentedControl.subviews.forEach { $0.backgroundColor = .systemBackground }
-        
-        // Add a target to handle segment changes
-        segmentedControl.addTarget(self, action: #selector(segmentedControlValueChanged), for: .valueChanged)
-        
-        //view.addSubview(segmentedControl)
-        //navigationItem.titleView = view
-        
-        //        NSLayoutConstraint.activate([
-        //            view.widthAnchor.constraint(equalToConstant: 140),
-        //            segmentedControl.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-        //            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-        //            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        //
-        //        ])
-        
-        // Set the segmented control as the titleView of the navigation item
-        navigationItem.titleView = segmentedControl
-    }
-    
+    //MARK: - Setup Navigation Bar
     func setupnavigationBar(){
         let space = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let config = UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
@@ -146,17 +104,6 @@ extension AtlasViewController {
         resetButton = UIBarButtonItem(image: UIImage(systemName: "arrow.counterclockwise", withConfiguration: config), style: .plain, target: self, action: #selector(resetButtonTapped))
         modeButton = UIBarButtonItem(image: UIImage(systemName: "book.fill"), style: .plain, target: self, action: #selector(modeButtonTapped))
         testAspectButton = UIBarButtonItem(image: UIImage(systemName: atlasModel.testingAspect.iconName), menu: makeMenu())
-        
-        
-        
-        //        let continentLabel = UILabel()
-        //        continentLabel.text = "Continent"
-        //        continentLabel.textAlignment = .center
-        //        let stackView = UIStackView(arrangedSubviews: [continentLabel])
-        //        stackView.alignment = .center
-        //        stackView.axis = .horizontal
-        //        stackView.spacing = 8
-        //        navigationItem.titleView = stackView
         
         navigationItem.leftBarButtonItems = [settingsButton, space, resetButton]
         navigationItem.rightBarButtonItems = [ modeButton]
@@ -181,22 +128,31 @@ extension AtlasViewController {
         
         let capitalAction = UIAction(title: "Capitals", image: capitalImage, state: atlasModel.testingAspect == .capital ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
-            self.atlasModel.testingAspect = .capital
+            //self.atlasModel.testingAspect = .capital
+            self.atlasModel.setTestingAspect(.capital)
             self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
             self.testAspectButton.menu = self.makeMenu()
+            self.reloadSnapshot()
+            self.setResetButtonState()
         }
         
         let countryAction = UIAction(title: "Countries", image: countryImage, state: atlasModel.testingAspect == .country ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
-            self.atlasModel.testingAspect = .country
+            //self.atlasModel.testingAspect = .country
+            self.atlasModel.setTestingAspect(.country)
             self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
             self.testAspectButton.menu = self.makeMenu()
+            self.reloadSnapshot()
+            self.setResetButtonState()
         }
         let flagAction = UIAction(title: "Flags", image: flagImage, state: atlasModel.testingAspect == .flag ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
-            self.atlasModel.testingAspect = .flag
+            //self.atlasModel.testingAspect = .flag
+            self.atlasModel.setTestingAspect(.flag)
             self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
             self.testAspectButton.menu = self.makeMenu()
+            self.reloadSnapshot()
+            self.setResetButtonState()
         }
         
         func attributedTitle(_ text: String, isActive: Bool) -> NSAttributedString {
@@ -210,10 +166,10 @@ extension AtlasViewController {
         return UIMenu(title: "Testing Items", children: [capitalAction, countryAction, flagAction])
     }
     
-    //MARK: - Setup CollectionView
+    //MARK: - Make List Layout
     func makeListLayout() -> UICollectionViewLayout {
         var config = UICollectionLayoutListConfiguration(appearance: .plain)
-
+        
         config.showsSeparators = false
         config.headerMode = .supplementary
         //config.footerMode = .supplementary
@@ -221,19 +177,19 @@ extension AtlasViewController {
         config.trailingSwipeActionsConfigurationProvider = { [weak self] indexPath in
             guard let self = self else { return nil }
             
-            guard self.atlasModel.filterMode == 0 else { return nil }
+//            guard self.atlasModel.currentConfig.mode == .learning else { return nil }
+            guard self.atlasModel.filterMode == 0 && self.atlasModel.currentConfig.mode == .learning else { return nil }
             
-            // зелёная кнопка "Learned"
+            // Right Green Swap Button (Learned)
             let learnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
                 
                 self.atlasModel.markCountryAsLearned(at: indexPath)
-                //self.collectionView.reloadData()
                 self.reloadSnapshot()
                 self.setResetButtonState()
                 
                 completion(true)
             }
-
+            
             learnedAction.backgroundColor = .systemGreen
             learnedAction.image = UIImage(systemName: "checkmark")
             
@@ -241,25 +197,22 @@ extension AtlasViewController {
             //swipeConfiguration.performsFirstActionWithFullSwipe = false
             
             return swipeConfiguration
-            
         }
         
         config.leadingSwipeActionsConfigurationProvider = { [weak self] indexPath in
             guard let self = self else { return nil }
             
-            guard self.atlasModel.filterMode == 1 else { return nil }
+            guard self.atlasModel.filterMode == 1 && self.atlasModel.currentConfig.mode == .learning else { return nil }
             
-            //желтая кнопка "UnLearned"
+            // Left Yellow Swap Button (Unlearned)
             let unlearnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
                 
                 self.atlasModel.markCountryAsLearned(at: indexPath)
                 self.reloadSnapshot()
-                //self.collectionView.reloadData()
                 self.setResetButtonState()
-
+                
                 completion(true)
             }
-            
             
             unlearnedAction.backgroundColor = .systemYellow
             unlearnedAction.image = UIImage(systemName: "lightbulb")
@@ -268,14 +221,14 @@ extension AtlasViewController {
             //swipeConfiguration.performsFirstActionWithFullSwipe = false
             
             return swipeConfiguration
-            
         }
         
         let layout  = UICollectionViewCompositionalLayout.list(using: config)
-
+        
         return layout
     }
     
+    //MARK: - Make Stats Layout
     func makeStatsLayout() -> UICollectionViewLayout {
         let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(120))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -291,19 +244,17 @@ extension AtlasViewController {
         let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .topLeading)
         header.pinToVisibleBounds = false
         
-        //header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-        
         let footerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(32))
         let footer = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: footerSize, elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottom)
         
         section.boundarySupplementaryItems = [header, footer]
         
         let layout = UICollectionViewCompositionalLayout(section: section)
-        //layout.configuration.interSectionSpacing = 40
         
         return layout
     }
     
+    //MARK: - Setup Collection View
     func setupCollectionView() {
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeListLayout())
         //collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeStatsViewLayout())
@@ -331,138 +282,110 @@ extension AtlasViewController {
         ])
     }
     
+    //MARK: - Apply Layout for current mode
     func applyLayoutForCurrentMode() {
         let layout: UICollectionViewLayout
-
+        
         switch displayMode {
         case .list:
             layout = makeListLayout()
         case .stats:
             layout = makeStatsLayout()
         }
-
+        
         collectionView.setCollectionViewLayout(layout, animated: false)
     }
     
-    
-    
-    
+    //MARK: - Setup Bottom Control Bar
     func setupBottomControlBar() {
         bottomControl = BottomControlBar()
-
+        
         let searchButton = UIButton(type: .system)
         let image = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
         searchButton.setImage(image, for: .normal)
-        searchButton.tintColor = .label
-        searchButton.backgroundColor = .systemBackground
-        searchButton.layer.cornerRadius = 28
-        searchButton.translatesAutoresizingMaskIntoConstraints = false
-        searchButton.layer.shadowColor = UIColor.label.cgColor
-        searchButton.layer.shadowOpacity = 0.15
-        searchButton.layer.shadowRadius = 6
-        searchButton.layer.shadowOffset = CGSize(width: 0, height: 2.5)
-        searchButton.layer.masksToBounds = false
-        searchButton.tintColor = AppColors.greyblue
-
+        
+        if #available(iOS 26.0, *) {
+            let configuration = UIButton.Configuration.glass()
+           searchButton.configuration = configuration
+        } else {
+            searchButton.tintColor = .label
+            searchButton.backgroundColor = .systemBackground
+            searchButton.layer.cornerRadius = 28
+            searchButton.translatesAutoresizingMaskIntoConstraints = false
+            searchButton.layer.shadowColor = UIColor.label.cgColor
+            searchButton.layer.shadowOpacity = 0.15
+            searchButton.layer.shadowRadius = 6
+            searchButton.layer.shadowOffset = CGSize(width: 0, height: 2.5)
+            searchButton.layer.masksToBounds = false
+            searchButton.tintColor = AppColors.greyblue
+        }
+        
         NSLayoutConstraint.activate([
             searchButton.widthAnchor.constraint(equalToConstant: 56),
             searchButton.heightAnchor.constraint(equalToConstant: 56)
         ])
-
+        
         bottomControlStack = UIStackView(arrangedSubviews: [bottomControl, searchButton])
         bottomControlStack.axis = .horizontal
         bottomControlStack.alignment = .center
-        bottomControlStack.spacing = 16
-        bottomControlStack.distribution = .equalSpacing   // ✅
+        bottomControlStack.spacing = 10
+        bottomControlStack.distribution = .equalSpacing
         bottomControlStack.translatesAutoresizingMaskIntoConstraints = false
-
+        
         view.addSubview(bottomControlStack)
         
         bottomControlWidthConstraint = bottomControl.widthAnchor.constraint(equalToConstant: bottomControl.preferredWidth)
-
+        
         NSLayoutConstraint.activate([
             bottomControlStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor, constant: 12),
             bottomControlStack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -12),
             bottomControlStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
-            //bottomControlStack.heightAnchor.constraint(equalToConstant: 55),
-
+            
             bottomControlWidthConstraint,
-            bottomControl.heightAnchor.constraint(equalToConstant: 56) //
+            bottomControl.heightAnchor.constraint(equalToConstant: 58) //
         ])
     }
-    
-    
-//    func setupBottomBar() {
-//        let toLearn = UIImage(systemName: "lightbulb", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-//        let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-//        let progress = UIImage(systemName: "percent", withConfiguration: UIImage.SymbolConfiguration(weight: .medium))
-//
-//        studyProgressSegmentedControl = UISegmentedControl(items: [toLearn!, learned!, progress!])
-////        studyProgressSegmentedControl.insertSegment(with: toLearn!, at: 0, animated: false)
-////        studyProgressSegmentedControl.insertSegment(with: learned!, at: 1, animated: false)
-//        studyProgressSegmentedControl.selectedSegmentIndex = 0
-//        studyProgressSegmentedControl.addTarget(self, action: #selector(progressModeChanged), for: .valueChanged)
-//        //studyProgressSegmentedControl.selectedSegmentTintColor = .systemGray5
-//        studyProgressSegmentedControl.subviews.forEach {
-//            $0.backgroundColor = .systemBackground
-//        }
-//        //studyProgressSegmentedControl.selectedSegmentTintColor = .clear
-//
-//        // --- ВАЖНО: контейнер с фиксированной шириной ---
-//        let container = UIView()
-//        container.translatesAutoresizingMaskIntoConstraints = false
-//        container.addSubview(studyProgressSegmentedControl)
-//        container.backgroundColor = .clear
-//        container.layer.cornerRadius = 22 * scaleFactor
-//
-//        studyProgressSegmentedControl.translatesAutoresizingMaskIntoConstraints = false
-//
-//        NSLayoutConstraint.activate([
-//            container.widthAnchor.constraint(equalToConstant: 210), // 👈 Увеличиваешь как хочешь
-//            container.heightAnchor.constraint(equalToConstant: 44),
-//            studyProgressSegmentedControl.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-//            studyProgressSegmentedControl.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-//            studyProgressSegmentedControl.topAnchor.constraint(equalTo: container.topAnchor),
-//            studyProgressSegmentedControl.bottomAnchor.constraint(equalTo: container.bottomAnchor)
-//        ])
-//
-//        let segmentsItem = UIBarButtonItem(customView: container)
-//        //segmentsItem.customView?.backgroundColor = .clear
-//
-//        let searchButton = UIBarButtonItem(
-//            barButtonSystemItem: .search,
-//            target: self,
-//            action: #selector(searchTapped)
-//        )
-//
-//        toolbarItems = [
-//            segmentsItem,
-//            UIBarButtonItem.flexibleSpace(),
-//            searchButton
-//        ]
-//        updateSegmentsColors()
-//        
-//    }
-    
 }
 
 //MARK: - Actions
 extension AtlasViewController {
     
+    //MARK: - Setting button tapped
     @objc func settingsButtonTapped(){
         
     }
     
+    //MARK: - Reset button tapped
     @objc func resetButtonTapped(){
+        var message = ""
+        switch atlasModel.currentConfig.mode {
+        case .learning:
+            message = "Are you sure you want to reset your learning progress?"
+        case .testing:
+            if atlasModel.testingAspect == .capital {
+                message = "Do you want to reset your capital test progress?"
+            } else if atlasModel.testingAspect == .country {
+                message = "Do you want to reset your country test progress?"
+            } else if atlasModel.testingAspect == .flag {
+                message = "Do you want to reset your flag test progress?"
+            }
+        }
+        
         let alert = UIAlertController(
             title: "Reset Progress",
-            message: "Are you sure you want to reset all learning progress?",
+            message: message,
             preferredStyle: .alert)
         
         let yesAction = UIAlertAction(title: "Yes", style: .destructive) { [weak self]_ in
             guard let self = self else { return }
             lightHaptic?.impactOccurred()
-            atlasModel.resetLearningProgress()
+            
+            if atlasModel.currentConfig.mode == .learning {
+                atlasModel.resetLearningProgress()
+            } else {
+                atlasModel.resetTestingProgress()
+            }
+            
             reloadSnapshot()
             setResetButtonState()
         }
@@ -473,10 +396,9 @@ extension AtlasViewController {
         alert.addAction(cancelAction)
         
         present(alert, animated: true, completion: nil)
-        
     }
     
-    
+    //MARK: - Mode button tapped
     @objc func modeButtonTapped() {
         guard let world = atlasModel.world else { return }
         
@@ -497,7 +419,6 @@ extension AtlasViewController {
             
             self.bottomControl.mode = mode == .learning ? .learning : .testing
             self.bottomControlWidthConstraint.constant = self.bottomControl.preferredWidth
-            //self?.collectionView.reloadData()
             self.setupRightButtonItems()
             
         }
@@ -507,12 +428,6 @@ extension AtlasViewController {
             sheet.prefersGrabberVisible = true
         }
         present(nav, animated: true)
-    }
-    
-    @objc func segmentedControlValueChanged(_ sender: UISegmentedControl) {
-        let selectedIndex = sender.selectedSegmentIndex
-        print("Selected segment index: \(selectedIndex)")
-        // Perform actions based on the selected segment
     }
     
     //MARK: - Learning Mode Changed (Segmented Control)
@@ -535,48 +450,43 @@ extension AtlasViewController {
             applyLayoutForCurrentMode()
             reloadSnapshot()
         }
-
+        
         bottomControl.onTestingChanged = { [weak self] segment in
             guard let self else { return }
-
+            
             switch segment {
-            case .test:
+            case .untested:
                 self.title = segment.title
-                print("Testing: Capital")
-            case .fail:
+                self.displayMode = .list
+                self.atlasModel.updateFilterMode(segment.segment)
+                //print("Testing: Capital \(segment.segment)")
+            case .failed:
                 self.title = segment.title
-                print("Testing: Country")
+                self.displayMode = .list
+                self.atlasModel.updateFilterMode(segment.segment)
+                //print("Testing: Country \(segment.segment)")
+            case .passed:
+                self.title = segment.title
+                self.displayMode = .list
+                self.atlasModel.updateFilterMode(segment.segment)
+                //print("Testing: Country \(segment.segment)")
             case .result:
                 self.title = segment.title
-                print("Testing: Flag")
+                self.displayMode = .stats
+                //print("Testing: Flag \(segment.segment)")
             }
+            applyLayoutForCurrentMode()
+            reloadSnapshot()
         }
     }
     
-//    @objc func progressModeChanged(_ sender: UISegmentedControl) {
-//        switch sender.selectedSegmentIndex {
-//        case 0, 1:
-//            displayMode = .list
-//            atlasModel.updateFilterMode(sender.selectedSegmentIndex)
-//        case 2:
-//            displayMode = .stats
-//            //atlasModel.updateFilterMode(sender.selectedSegmentIndex)
-//        default:
-//            break
-//        }
-//        
-//        applyLayoutForCurrentMode()
-//        //collectionView.reloadData()
-//        reloadSnapshot()
-//        //updateSegmentsColors()
-//    }
     
-    
+    //MARK: - Seach Button Tapped
     @objc func searchTapped() {
         print("Search tapped")
     }
     
-    
+    //MARK: - Update UI
     private func updateUIForConfig() {
         let mode = atlasModel.currentConfig.mode
         
@@ -594,27 +504,7 @@ extension AtlasViewController {
         }
     }
     
-//    func updateSegmentsColors() {
-//        let index = studyProgressSegmentedControl.selectedSegmentIndex
-//        let activeToLearnColor = UIColor.systemYellow
-//        let activeLearnedColor = UIColor.systemGreen
-//        let activeProgressColor = UIColor.systemBlue
-//        let activeColor = (index == 0) ? activeToLearnColor : (index == 1 ? activeLearnedColor : activeProgressColor)
-//        let inactiveColor = UIColor.tertiaryLabel
-//        let size: CGFloat = 16 * scaleFactor
-//        let activeFont = UIFont.systemFont(ofSize: size, weight: .bold)
-//        let inactiveFont = UIFont.systemFont(ofSize: size, weight: .semibold)
-//        
-//        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: inactiveFont], for: .normal)
-//        studyProgressSegmentedControl.setTitleTextAttributes([.foregroundColor: activeColor, .font: activeFont], for: .selected)
-//    }
-    
-    //MARK: - Data Snapshots
-    func reloadSnapshot_() {
-        snapshotWorld = atlasModel.filteredWorld()
-        collectionView.reloadData()
-    }
-    
+    //MARK: - Reload Snapshots
     func reloadSnapshot() {
         switch displayMode {
         case .list:
@@ -632,36 +522,41 @@ extension AtlasViewController {
     func reloadStatsSnapshot() {
         snapshotStats = atlasModel.getStatistics()
     }
-
+    
 }
 //MARK: - CollectionView Delegate
 extension AtlasViewController: UICollectionViewDataSource {
     
+    //Number of Sections
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         if displayMode == .list {
             return snapshotWorld.continents.count
         } else {
             return snapshotStats.count
         }
-       
     }
     
+    //Number of Items in Sections
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
         if displayMode == .list {
             return snapshotWorld.continents[section].countries.count
         } else {
             return 1 //only stats cell
         }
-
     }
     
+    //MARK: - Cell Configure
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if displayMode == .list {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CountryCell.reusedId, for: indexPath) as! CountryCell
             let continents = snapshotWorld.continents[indexPath.section]
             let country = continents.countries[indexPath.item]
-            cell.configure(index: indexPath.item + 1, flag: country.flag, name: country.name, capital: country.capital)
+            
+            let testingAspect = atlasModel.testingAspect
+            let isTestingMode = atlasModel.currentConfig.mode == .testing ? true : false
+            let currentSegment = bottomControl.currentTestingSegment.segment
+            
+            cell.configure(country: country, testingAspect: testingAspect, isTestingMode: isTestingMode, currentSegment: currentSegment)
             return cell
         } else {
             let stats = snapshotStats[indexPath.section]
@@ -671,46 +566,42 @@ extension AtlasViewController: UICollectionViewDataSource {
         }
     }
     
-    //Header, Footer
+    //MARK: - Header, Footer Configure
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        //Display list mode (segments 0, 1)
         if displayMode == .list {
-            let sectionName = snapshotWorld.continents[indexPath.section].name
+            let continent = snapshotWorld.continents[indexPath.section]
             let totalCount = atlasModel.getTotal(for: indexPath)
             let currentCount = atlasModel.getCurrentCount(for: indexPath)
             
-            
+            //Header
             if kind == UICollectionView.elementKindSectionHeader {
                 let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: ContinentHeader.reuseId, for: indexPath) as! ContinentHeader
-                header.titleLabel.text = sectionName
-                //header.countLabel.text = "(\(currentCount)"
-                //header.totalLabel.text = "\(totalCount))"
+                header.configure(continent: continent)
                 return header
             }
             
-            
+            //Footer
             if kind == UICollectionView.elementKindSectionFooter {
                 let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: ContinentFooter.reuseId, for: indexPath) as! ContinentFooter
                 footer.configure(count: totalCount - currentCount)
                 return footer
             }
         } else {
+            //Display Statistics mode (segment 2)
             let continent = snapshotStats[indexPath.section]
-            let sectionName = continent.name
-            let totalCount = continent.total
-            let learnedCount = continent.learned
-            let leftCount = continent.toLearn
-            let learnedProgress = continent.learnedProgress
             
+            //Header
             if kind == UICollectionView.elementKindSectionHeader {
                 let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: StatsHeader.reusedId, for: indexPath) as! StatsHeader
-                header.configure(name: sectionName, progress: learnedProgress)
+                header.configure(continent: continent)
                 return header
             }
             
-            
+            //Footer
             if kind == UICollectionView.elementKindSectionFooter {
                 let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: StatsFooter.reusedId, for: indexPath) as! StatsFooter
-                footer.configure(total: totalCount, learned: learnedCount, toLearn: leftCount)
+                footer.configure(continent: continent)
                 return footer
             }
         }
@@ -718,11 +609,41 @@ extension AtlasViewController: UICollectionViewDataSource {
         fatalError("Unexpected supplementary kind: \(kind)")
     }
 }
+//MARK: - Test Question View Controller
 
-//MARK: - CollectionView Swipes
+extension AtlasViewController {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard atlasModel.currentConfig.mode == .testing else { return }
+        
+        let country = snapshotWorld.continents[indexPath.section].countries[indexPath.item]
+        let style: TestQuestionViewController.OptionSytle = atlasModel.testingAspect == .flag ? .flag : .text
+        let aspect: TestQuestionViewController.TestingAspect =  atlasModel.testingAspect == .capital ? .capital : (atlasModel.testingAspect == .country ? .country : .flag)
+        
+        let question = atlasModel.makeTestQuestion(for: country)
+        
+        let vc = TestQuestionViewController(question: question, style: style, aspect: aspect)
+        vc.modalPresentationStyle = .overFullScreen
+        vc.modalTransitionStyle = .crossDissolve
+        
+        vc.onAnswerSelected = { [weak self] selectedIndex in
+            guard let self else { return }
+            
+            let isCorrect = selectedIndex == question.correctIndex
+            
+            self.atlasModel.updateTestResult(for: country, aspect: self.atlasModel.testingAspect, result: isCorrect)
+            self.reloadSnapshot()
+            self.setResetButtonState()
+        }
+      
+    
+        present(vc, animated: true)
+    }
+    
+}
+//MARK: - CollectionView Long Hold Context Menu (Experimental)
 extension AtlasViewController {
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint ) -> UIContextMenuConfiguration? {
-
+        
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
             
             let learned = UIAction(
@@ -734,7 +655,7 @@ extension AtlasViewController {
                     print("Learned tapped at \(indexPath)")
                 }
             )
-
+            
             let unlearned = UIAction(
                 title: "Unlearned",
                 image: UIImage(systemName: "lightbulb.fill")?.withTintColor(.systemYellow, renderingMode: .alwaysOriginal),
@@ -744,7 +665,7 @@ extension AtlasViewController {
                     print("Unlearned tapped at \(indexPath)")
                 }
             )
-
+            
             return UIMenu(title: "", children: [learned, unlearned])
         }
     }
@@ -752,17 +673,17 @@ extension AtlasViewController {
 
 
 extension AtlasViewController {
-   
+    
     private func configureNavigationTitle() {
         let appearance = UINavigationBarAppearance()
         //appearance.configureWithOpaqueBackground()
-       // appearance.backgroundColor = .systemBackground
-
+        // appearance.backgroundColor = .systemBackground
+        
         appearance.titleTextAttributes = [
             .font: UIFont.rounded(ofSize: 18, weight: .medium),
             .foregroundColor: UIColor.label
         ]
-
+        
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
@@ -771,6 +692,11 @@ extension AtlasViewController {
 
 extension AtlasViewController {
     func setResetButtonState() {
-        resetButton.isEnabled =  atlasModel.startedLearning ? true : false
+        switch atlasModel.currentConfig.mode {
+        case .learning:
+            resetButton.isEnabled =  atlasModel.startedLearning ? true : false
+        case .testing:
+            resetButton.isEnabled =  atlasModel.startedTesting ? true : false
+        }
     }
 }

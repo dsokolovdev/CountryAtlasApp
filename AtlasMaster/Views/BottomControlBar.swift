@@ -31,18 +31,21 @@ final class BottomControlBar: UIView {
     }
     
     enum TestingSegment: Int {
-        case test = 0
-        case fail
+        case untested = 0
+        case failed
+        case passed
         case result
         
         var segment: Int { rawValue }
         
         var title: String {
             switch self {
-            case .test:
-                return "Testing"
-            case .fail:
+            case .untested:
+                return "Test"
+            case .failed:
                 return "Review"
+            case .passed:
+                return "Passed"
             case .result:
                 return "Results"
             }
@@ -51,8 +54,9 @@ final class BottomControlBar: UIView {
     
     private enum TestingIconStyle {
         case inactive
-        case test
-        case fail
+        case untested
+        case failed
+        case passed
         case result
     }
 
@@ -62,7 +66,7 @@ final class BottomControlBar: UIView {
     }
     
     var currentTestingSegment: TestingSegment {
-        TestingSegment(rawValue: testingSegment.selectedSegmentIndex) ?? .test
+        TestingSegment(rawValue: testingSegment.selectedSegmentIndex) ?? .untested
     }
 
     var mode: Mode = .learning {
@@ -70,8 +74,8 @@ final class BottomControlBar: UIView {
     }
     
     var preferredWidth: CGFloat {
-        let count = (mode == .learning) ? 3 : 3
-        return CGFloat(count) * 72
+        let count = (mode == .learning) ? 3 : 4
+        return CGFloat(count) * 73
     }
     
     var onLearningChanged: ((LearningSegment) -> Void)?
@@ -87,8 +91,8 @@ final class BottomControlBar: UIView {
         let sc = UISegmentedControl(items: [toLearn!, learned!, progress!])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
-        sc.selectedSegmentTintColor = AppColors.greyblue.withAlphaComponent(0.1)
-        sc.subviews.forEach { $0.backgroundColor = .systemBackground }
+        sc.selectedSegmentTintColor = AppColors.greyblue.withAlphaComponent(0.15)
+        sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.7) }
         return sc
     }()
 
@@ -96,18 +100,20 @@ final class BottomControlBar: UIView {
         let inactiveConfig = UIImage.SymbolConfiguration(paletteColors: [.systemGray, .lightGray])
         let testActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.deepgreen, AppColors.greyblue])
         let failActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.coolred, AppColors.greyblue])
+        let passActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.wildgreen, AppColors.greyblue])
         let resultActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.marine, AppColors.greyblue])
         
         let test = UIImage(systemName: "checklist", withConfiguration: testActiveConfig)
         let fail = UIImage(systemName: "text.badge.xmark", withConfiguration: failActiveConfig)
+        let pass = UIImage(systemName: "text.badge.checkmark", withConfiguration: passActiveConfig)
         let result = UIImage(systemName: "chart.bar.horizontal.page", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
        // let progress = UIImage(systemName: "trophy.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
-
-        let sc = UISegmentedControl(items: [test!, fail!, result!])
+        
+        let sc = UISegmentedControl(items: [test!, fail!, pass!, result!])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
-        sc.selectedSegmentTintColor = .systemGray6
-        sc.subviews.forEach { $0.backgroundColor = .systemBackground }
+        sc.selectedSegmentTintColor = AppColors.greyblue.withAlphaComponent(0.15)
+        sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.7) }
         return sc
     }()
 
@@ -130,8 +136,8 @@ final class BottomControlBar: UIView {
 
     private func setup() {
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = .systemBackground
-        layer.cornerRadius = 28 * scaleFactor
+        backgroundColor = .systemBackground.withAlphaComponent(0.2)
+        layer.cornerRadius = 29 * scaleFactor
 
         layer.shadowColor = UIColor.label.cgColor
         layer.shadowOpacity = 0.1
@@ -216,10 +222,12 @@ final class BottomControlBar: UIView {
         switch style {
         case .inactive:
             config = UIImage.SymbolConfiguration(paletteColors: [.systemGray, .lightGray]).applying(inactiveConfig)
-        case .test:
+        case .untested:
             config = UIImage.SymbolConfiguration(paletteColors: [AppColors.darkblue, AppColors.greyblue]).applying(activeConfig)
-        case .fail:
+        case .failed:
             config = UIImage.SymbolConfiguration(paletteColors: [AppColors.coolred, AppColors.greyblue]).applying(activeConfig)
+        case .passed:
+            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.wildgreen, AppColors.greyblue]).applying(activeConfig)
         case .result:
             config = UIImage.SymbolConfiguration(paletteColors: [AppColors.marine, AppColors.greyblue]).applying(activeConfig)
         }
@@ -229,11 +237,10 @@ final class BottomControlBar: UIView {
     private func updateTestingColors() {
         let index = testingSegment.selectedSegmentIndex
         
-        testingSegment.setImage(testingIcon(for: index == TestingSegment.test.rawValue ? .test : .inactive, systemName: "checklist"), forSegmentAt: TestingSegment.test.rawValue)
-        testingSegment.setImage(testingIcon(for: index == TestingSegment.fail.rawValue ? .fail : .inactive, systemName: "text.badge.xmark"), forSegmentAt: TestingSegment.fail.rawValue)
+        testingSegment.setImage(testingIcon(for: index == TestingSegment.untested.rawValue ? .untested : .inactive, systemName: "checklist"), forSegmentAt: TestingSegment.untested.rawValue)
+        testingSegment.setImage(testingIcon(for: index == TestingSegment.failed.rawValue ? .failed : .inactive, systemName: "text.badge.xmark"), forSegmentAt: TestingSegment.failed.rawValue)
+        testingSegment.setImage(testingIcon(for: index == TestingSegment.passed.rawValue ? .passed : .inactive, systemName: "text.badge.checkmark"), forSegmentAt: TestingSegment.passed.rawValue)
         testingSegment.setImage(testingIcon(for: index == TestingSegment.result.rawValue ? .result : .inactive, systemName: "chart.bar.horizontal.page"), forSegmentAt: TestingSegment.result.rawValue)
-        
-        
     }
     
     @objc private func learningModeChanged(_ sender: UISegmentedControl) {

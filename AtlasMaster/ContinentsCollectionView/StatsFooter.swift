@@ -151,7 +151,11 @@ final class StatsFooter: UICollectionReusableView {
     }
     
     
-    func configure(total: Int, learned: Int, toLearn: Int) {
+    func configure(continent: ContinentStats) {
+        let learned = continent.learned
+        let total = continent.total
+        let toLearn = continent.toLearn
+        
         totalLabel.text = "\(total)"
         learnedLabel.text = "\(learned)"
         toLearnLabel.text = "\(toLearn)"

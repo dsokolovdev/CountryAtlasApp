@@ -35,7 +35,10 @@ struct CountryService {
             let region = item.region ?? ""
             let flag = item.flag ?? "🏳️"
             
-            country = Country(name: name, capital: capital, flag: flag, isLearned: false)
+            country = Country(name: name, capital: capital, flag: flag, isLearned: false, testResults: [.capital: .notTested,
+                                                                                                        .country: .notTested,
+                                                                                                        .flag: .notTested]
+            )
             
             if continentsDict[region] == nil {
                 continentsDict[region] = []
