@@ -35,7 +35,7 @@ struct TestQuestion {
     let correctIndex: Int
 }
 
-struct TestOption: Equatable {
+struct TestOption: Equatable, Hashable {
     let title: String?
     //let image: UIImage?
     

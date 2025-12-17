@@ -42,7 +42,6 @@ final class AtlasModel {
             
             // фильтр по изученности
             let filteredCountries = continent.countries.filter { country in
-                
                 if currentStudyMode == .learning {
                     switch filterMode {
                     case 0: return !country.isLearned // To learn
@@ -51,6 +50,10 @@ final class AtlasModel {
                     default: return true
                     }
                 } else {
+                    // ⛔️ исключаем страны без столицы для теста "country"
+                    if testingAspect == .country && country.capital == "No capital" {
+                        return false
+                    }
                     switch filterMode {
                     case 0: return (country.testResults[testingAspect] ?? .notTested) == .notTested // Test
                     case 1: return (country.testResults[testingAspect] ?? .notTested) == .failed    // Review
@@ -62,6 +65,7 @@ final class AtlasModel {
             }.sorted {
                 $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
             }
+            
             
             let finalCountries: [Country]
             
@@ -283,69 +287,210 @@ final class AtlasModel {
 //MARK: - Make Questions
 extension AtlasModel {
     
+//    func makeTestQuestion(for country: Country) -> TestQuestion {
+//        let aspect = testingAspect
+//
+//        let correctOption: TestOption
+//        switch aspect {
+//        case .capital:
+//            correctOption = TestOption(title: country.capital)
+//        case .country:
+//            correctOption = TestOption(title: country.name)
+//        case .flag:
+//            correctOption = TestOption(title: country.flag)
+//        }
+//
+//        var options = [correctOption]
+//
+//        let distractors = randomDistractors(for: aspect, excluding: country, count: 3)
+//        options.append(contentsOf: distractors)
+//
+//        options.shuffle()
+//
+//        let correctIndex = options.firstIndex(where: { $0 == correctOption })!
+//
+//        return TestQuestion(country: country, options: options, correctIndex: correctIndex)
+//    }
+//    func makeTestQuestion(for country: Country) -> TestQuestion {
+//        let aspect = testingAspect
+//
+//        let correctTitle: String
+//        switch aspect {
+//        case .capital:
+//            correctTitle = country.capital
+//        case .country:
+//            correctTitle = country.name
+//        case .flag:
+//            correctTitle = country.flag
+//        }
+//
+//        var titles = Set<String>()
+//        titles.insert(correctTitle)
+//
+//        let distractors = randomDistractorTitles(for: aspect, excluding: country, count: 3)
+//
+//        titles.formUnion(distractors)
+//
+//        // если вдруг не набралось 4 — можно добрать или оставить как есть
+//        let options = titles.map { TestOption(title: $0) }.shuffled()
+//
+//        let correctIndex = options.firstIndex { $0.title == correctTitle }!
+//
+//        return TestQuestion(country: country, options: options, correctIndex: correctIndex)
+//    }
+    
     func makeTestQuestion(for country: Country) -> TestQuestion {
         let aspect = testingAspect
 
-        let correctOption: TestOption
-        switch aspect {
-        case .capital:
-            correctOption = TestOption(title: country.capital)
-        case .country:
-            correctOption = TestOption(title: country.name)
-        case .flag:
-            correctOption = TestOption(title: country.flag)
+        let correctTitle = title(for: country, aspect: aspect)
+
+        var titles = Set<String>()
+        titles.insert(correctTitle)
+
+        let distractors = randomDistractorTitles(for: aspect, excluding: country, correctTitle: correctTitle, count: 3)
+
+        titles.formUnion(distractors)
+
+        let options = titles.map { TestOption(title: $0) }.shuffled()
+
+        // ✅ НЕ ПАДАЕМ
+        guard let correctIndex = options.firstIndex(where: { $0.title == correctTitle }) else {
+            // на практике сюда не должно попасть, но лучше вернуть “безопасно”
+            return TestQuestion(country: country, options: options, correctIndex: 0)
         }
-
-        var options = [correctOption]
-
-        let distractors = randomDistractors(for: aspect, excluding: country, count: 3)
-        options.append(contentsOf: distractors)
-
-        options.shuffle()
-
-        let correctIndex = options.firstIndex(where: { $0 == correctOption })!
 
         return TestQuestion(country: country, options: options, correctIndex: correctIndex)
     }
     
-    func randomDistractors(for aspect: TestingAspect,excluding country: Country,count: Int) -> [TestOption] {
-        
-        guard let world else { return [] }
-        
-       
-        
-        let selectedRegion = currentConfig.region
-        //print(selectedRegion)
-        
-        let pool: [Country] = world.continents.filter { continent in
-            switch selectedRegion {
-            case .world:
-                return true
-            case .continent(let name):
-                return continent.name == name
-            }
-        }.flatMap { $0.countries }
-            .filter {
-                $0 != country && $0.testResults[aspect] ?? .notTested == .notTested
-        }
-        
-        //print(pool)
-        
-        guard pool.count >= count else { return [] }
-        
-        let selected = pool.shuffled().prefix(count)
-        
-        return selected.map {
-            switch aspect {
-            case .capital:
-                return TestOption(title: $0.capital)
-            case .country:
-                return TestOption(title: $0.name)
-            case .flag:
-                return TestOption(title: $0.flag)
-            }
+    private func title(for country: Country, aspect: TestingAspect) -> String {
+        switch aspect {
+        case .capital: return country.capital
+        case .country: return country.name
+        case .flag:    return country.flag
         }
     }
+    
+    private func randomDistractorTitles(for aspect: TestingAspect, excluding country: Country, correctTitle: String, count: Int) -> Set<String> {
+
+        guard let world else { return [] }
+
+        func regionFilter(_ continent: Continent) -> Bool {
+            switch currentConfig.region {
+            case .world: return true
+            case .continent(let name): return continent.name == name
+            }
+        }
+
+        let allInRegion = world.continents
+            .filter(regionFilter)
+            .flatMap { $0.countries }
+            .filter { $0 != country }
+
+        let allWorld = world.continents
+            .flatMap { $0.countries }
+            .filter { $0 != country }
+
+        // ВАЖНО: убираем дубликаты “No capital” (и вообще всё, что == correctTitle)
+        func makePool(from countries: [Country]) -> [String] {
+            countries.map { title(for: $0, aspect: aspect) }.filter { !$0.isEmpty && $0 != correctTitle && !(aspect == .capital && $0 == "No capital")}
+        }
+
+        // 1) notTested в регионе
+        let pool1Countries = allInRegion.filter { ($0.testResults[aspect] ?? .notTested) == .notTested }
+        // 2) все статусы в регионе (notTested + failed + passed)
+        let pool2Countries = allInRegion
+        // 3) весь мир (на случай Antarctica)
+        let pool3Countries = allWorld
+
+        var result = Set<String>()
+
+        for pool in [makePool(from: pool1Countries), makePool(from: pool2Countries), makePool(from: pool3Countries)] {
+            for t in pool.shuffled() {
+                result.insert(t)
+                if result.count == count { return result }
+            }
+        }
+
+        return result
+    }
+
+    
+//    func randomDistractorTitles(for aspect: TestingAspect, excluding country: Country, count: Int) -> Set<String> {
+//
+//        guard let world else { return [] }
+//
+//        let selectedRegion = currentConfig.region
+//
+//        let pool = world.continents.filter { continent in
+//                switch selectedRegion {
+//                case .world:
+//                    return true
+//                case .continent(let name):
+//                    return continent.name == name
+//                }
+//            }.flatMap { $0.countries }.filter {
+//                $0 != country &&
+//                ($0.testResults[aspect] ?? .notTested) == .notTested
+//            }
+//
+//        var result = Set<String>()
+//
+//        for country in pool.shuffled() {
+//            let title: String
+//            switch aspect {
+//            case .capital:
+//                title = country.capital
+//            case .country:
+//                title = country.name
+//            case .flag:
+//                title = country.flag
+//            }
+//
+//            result.insert(title)
+//
+//            if result.count == count {
+//                break
+//            }
+//        }
+//
+//        return result
+//    }
+    
+//    func randomDistractors(for aspect: TestingAspect,excluding country: Country,count: Int) -> [TestOption] {
+//        
+//        guard let world else { return [] }
+//
+//        let selectedRegion = currentConfig.region
+//        
+//        let pool: [Country] = world.continents.filter { continent in
+//            switch selectedRegion {
+//            case .world:
+//                return true
+//            case .continent(let name):
+//                return continent.name == name
+//            }
+//        }.flatMap { $0.countries }
+//            .filter {
+//                $0 != country && $0.testResults[aspect] ?? .notTested == .notTested
+//        }
+//        
+//        //print(pool)
+//        
+//        guard pool.count >= count else { return [] }
+//        
+//        let selected = pool.shuffled().prefix(count)
+//        
+//        return selected.map {
+//            switch aspect {
+//            case .capital:
+//                return TestOption(title: $0.capital)
+//            case .country:
+//                return TestOption(title: $0.name)
+//            case .flag:
+//                return TestOption(title: $0.flag)
+//            }
+//        }
+//    }
     
     func updateTestResult(for country: Country, aspect: TestingAspect, result: Bool) {
         guard

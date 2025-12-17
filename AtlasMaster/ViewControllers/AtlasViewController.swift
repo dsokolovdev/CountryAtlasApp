@@ -416,6 +416,7 @@ extension AtlasViewController {
             self.updateUIForConfig()
             self.atlasModel.saveUserConfiguratin((self.atlasModel.currentConfig))
             self.reloadSnapshot()
+            self.setResetButtonState()
             
             self.bottomControl.mode = mode == .learning ? .learning : .testing
             self.bottomControlWidthConstraint.constant = self.bottomControl.preferredWidth
@@ -614,6 +615,7 @@ extension AtlasViewController: UICollectionViewDataSource {
 extension AtlasViewController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard atlasModel.currentConfig.mode == .testing else { return }
+        guard bottomControl.currentTestingSegment == .untested else { return }
         
         let country = snapshotWorld.continents[indexPath.section].countries[indexPath.item]
         let style: TestQuestionViewController.OptionSytle = atlasModel.testingAspect == .flag ? .flag : .text
@@ -625,12 +627,13 @@ extension AtlasViewController {
         vc.modalPresentationStyle = .overFullScreen
         vc.modalTransitionStyle = .crossDissolve
         
-        vc.onAnswerSelected = { [weak self] selectedIndex in
+        vc.onAnswerSelected = { [weak self] isCorrect in
             guard let self else { return }
             
-            let isCorrect = selectedIndex == question.correctIndex
+            //let isCorrect = selectedIndex == question.correctIndex
             
             self.atlasModel.updateTestResult(for: country, aspect: self.atlasModel.testingAspect, result: isCorrect)
+            
             self.reloadSnapshot()
             self.setResetButtonState()
         }

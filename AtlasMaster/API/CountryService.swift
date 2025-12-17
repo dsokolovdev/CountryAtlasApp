@@ -31,7 +31,7 @@ struct CountryService {
         
         for item in apiCountries {
             let name = item.name.common
-            let capital = item.capital?.first ?? "-"
+            let capital = item.capital?.first ?? "No capital"
             let region = item.region ?? ""
             let flag = item.flag ?? "🏳️"
             

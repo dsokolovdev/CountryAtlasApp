@@ -41,7 +41,7 @@ final class TestQuestionViewController: UIViewController {
         }
     }
     
-    var onAnswerSelected: ((Int) -> Void)?
+    var onAnswerSelected: ((Bool) -> Void)?
     
     let style: OptionSytle
     let country: Country
@@ -83,6 +83,15 @@ final class TestQuestionViewController: UIViewController {
         return lbl
     }()
     
+    private let resultLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.font = .rounded(ofSize: 22, weight: .semibold)
+        lbl.textAlignment = .center
+        lbl.alpha = 0
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        return lbl
+    }()
+    
     let doneButton: UIButton = {
         let btn = UIButton(type: .system)
         btn.translatesAutoresizingMaskIntoConstraints = false
@@ -103,25 +112,21 @@ final class TestQuestionViewController: UIViewController {
     
     let optionOneButton: UIButton = {
         let btn = UIButton(type: .system)
-        //btn.setTitle("🇺🇸 ", for: .normal)
         return btn
     }()
     
     let optionTwoButton: UIButton = {
         let btn = UIButton(type: .system)
-        //btn.setTitle("🇬🇧", for: .normal)
         return btn
     }()
     
     let optionThreeButton: UIButton = {
         let btn = UIButton(type: .system)
-       // btn.setTitle("🇫🇷", for: .normal)
         return btn
     }()
     
     let optionFourButton: UIButton = {
         let btn = UIButton(type: .system)
-        //btn.setTitle("🇳🇴", for: .normal)
         return btn
     }()
     
@@ -149,6 +154,7 @@ final class TestQuestionViewController: UIViewController {
         setupQuestionLabel()
         setupOptionButtons()
         setupOptionsVStack()
+        setupResultLabel()
         
         questionLabel.text = aspect.question(for: country)
         
@@ -162,6 +168,15 @@ final class TestQuestionViewController: UIViewController {
             cardView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             cardView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             cardView.widthAnchor.constraint(equalToConstant: 320),
+        ])
+    }
+    
+    private func setupResultLabel() {
+        cardView.addSubview(resultLabel)
+
+        NSLayoutConstraint.activate([
+            resultLabel.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
+            resultLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor)
         ])
     }
     
@@ -214,19 +229,21 @@ final class TestQuestionViewController: UIViewController {
     
     private func setupOptionsVStack() {
 
-        optionsVStack.addArrangedSubview(optionOneButton)
-        optionsVStack.addArrangedSubview(optionTwoButton)
-        optionsVStack.addArrangedSubview(optionThreeButton)
-        optionsVStack.addArrangedSubview(optionFourButton)
-        
         cardView.addSubview(optionsVStack)
-        
+
         NSLayoutConstraint.activate([
             optionsVStack.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 24),
             optionsVStack.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -24),
             optionsVStack.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 24),
             optionsVStack.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -24)
         ])
+
+        switch style {
+        case .text:
+            setupTextOptions()
+        case .flag:
+            setupFlagOptions()
+        }
     }
     
     private func presentOptionAnswers() {
@@ -249,13 +266,55 @@ final class TestQuestionViewController: UIViewController {
     }
     
     @objc private func choiceMade(sender: UIButton) {
-//        guard let title = sender.titleLabel?.text,
-//              let option = question.options.first(where: { $0.title == title })
-//        else { return }
-//        
-//        onAnswerSelected?(option)
         
-        onAnswerSelected?(sender.tag)
-        dismiss(animated: true)
+        let isCorrect = sender.tag == question.correctIndex
+        
+        showResult(isCorrect: isCorrect)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            self.onAnswerSelected?(isCorrect)
+            self.dismiss(animated: true)
+        }
+    }
+    
+    private func showResult(isCorrect: Bool) {
+        resultLabel.text = isCorrect ? "Correct ✓" : "Wrong ✕"
+        resultLabel.textColor = isCorrect ? .systemGreen : .systemRed
+
+        UIView.animate(withDuration: 0.25) {
+            self.resultLabel.alpha = 1
+            self.optionsVStack.alpha = 0.14
+        }
+    }
+}
+
+//MARK: - Setup Up Layout Options for OptionsVStack
+extension TestQuestionViewController {
+    private func setupTextOptions() {
+        [optionOneButton, optionTwoButton, optionThreeButton, optionFourButton].forEach {
+            optionsVStack.addArrangedSubview($0)
+        }
+    }
+    
+    private func setupFlagOptions() {
+
+        let row1 = UIStackView()
+        row1.axis = .horizontal
+        row1.spacing = 16
+        row1.distribution = .fillEqually
+
+        let row2 = UIStackView()
+        row2.axis = .horizontal
+        row2.spacing = 16
+        row2.distribution = .fillEqually
+
+        row1.addArrangedSubview(optionOneButton)
+        row1.addArrangedSubview(optionTwoButton)
+
+        row2.addArrangedSubview(optionThreeButton)
+        row2.addArrangedSubview(optionFourButton)
+
+        optionsVStack.addArrangedSubview(row1)
+        optionsVStack.addArrangedSubview(row2)
     }
 }

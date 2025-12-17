@@ -30,10 +30,10 @@
             filePath = "AtlasMaster/Model/AtlasModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "338"
-            endingLineNumber = "338"
-            landmarkName = "randomDistractors(for:excluding:count:)"
-            landmarkType = "7">
+            startingLineNumber = "483"
+            endingLineNumber = "483"
+            landmarkName = "AtlasModel"
+            landmarkType = "21">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -46,10 +46,10 @@
             filePath = "AtlasMaster/Model/AtlasModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "332"
-            endingLineNumber = "332"
-            landmarkName = "randomDistractors(for:excluding:count:)"
-            landmarkType = "7">
+            startingLineNumber = "477"
+            endingLineNumber = "477"
+            landmarkName = "AtlasModel"
+            landmarkType = "21">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
