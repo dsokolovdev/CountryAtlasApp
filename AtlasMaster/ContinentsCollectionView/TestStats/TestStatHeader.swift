@@ -1,14 +1,13 @@
 //
-//  StatsHeader.swift
+//  StatsTestHeader.swift
 //  AtlasMaster
 //
-//  Created by Dmitri  on 12.12.25.
+//  Created by Dmitri  on 18.12.25.
 //
-
 import UIKit
 
-final class StatsHeader: UICollectionReusableView {
-    static let reusedId = "StatsHeader"
+final class TestStatHeader: UICollectionReusableView {
+    static let reusedId = "StatsTestHeader"
     
     let nameLabel: UILabel = {
         let lbl = UILabel()
@@ -62,8 +61,8 @@ final class StatsHeader: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(continent: ContinentStats) {
-        let learnedProgress = continent.learnedProgress
+    func configure(continent: ContinentTestStats) {
+        let learnedProgress = continent.passed
         let name = continent.name
         
         nameLabel.text = name

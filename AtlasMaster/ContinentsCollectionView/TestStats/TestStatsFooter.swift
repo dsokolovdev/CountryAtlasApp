@@ -1,16 +1,17 @@
 //
-//  StatsFooter.swift
+//  TestStatsFooter.swift
 //  AtlasMaster
 //
-//  Created by Dmitri  on 12.12.25.
+//  Created by Dmitri  on 18.12.25.
 //
+
 
 import UIKit
 
-final class StatsFooter: UICollectionReusableView {
-    static let reusedId = "StatsFooter"
+final class TestStatsFooter: UICollectionReusableView {
+    static let reusedId = "TestStatsFooter"
     
-    private let totalLabel: UILabel = {
+    private let passedLabel: UILabel = {
         let lbl = UILabel()
         lbl.font =  .rounded(ofSize: 14, weight: .semibold)
         lbl.textAlignment = .left
@@ -18,7 +19,7 @@ final class StatsFooter: UICollectionReusableView {
         return lbl
     }()
     
-    private let learnedLabel: UILabel = {
+    private let failedLabel: UILabel = {
         let lbl = UILabel()
         lbl.font =  .rounded(ofSize: 14, weight: .semibold)
         lbl.textAlignment = .left
@@ -26,7 +27,7 @@ final class StatsFooter: UICollectionReusableView {
         return lbl
     }()
     
-    private let toLearnLabel: UILabel = {
+    private let notTestedLabel: UILabel = {
         let lbl = UILabel()
         lbl.font =  .rounded(ofSize: 14, weight: .semibold)
         lbl.textAlignment = .right
@@ -34,34 +35,34 @@ final class StatsFooter: UICollectionReusableView {
         return lbl
     }()
     
-    private let totalLabelText: UILabel = {
+    private let passedLabelText: UILabel = {
         let lbl = UILabel()
-        lbl.text = "Total:"
+        lbl.text = "Passed:"
         lbl.font =  .rounded(ofSize: 14)
         lbl.textAlignment = .left
         lbl.textColor = .secondaryLabel
         return lbl
     }()
     
-    private let learnedLabelText: UILabel = {
+    private let failedLabelText: UILabel = {
         let lbl = UILabel()
-        lbl.text = "Learned:"
+        lbl.text = "Failed:"
         lbl.font =  .rounded(ofSize: 14)
         lbl.textAlignment = .right
         lbl.textColor = .secondaryLabel
         return lbl
     }()
     
-    private let toLearnLabelText: UILabel = {
+    private let notTestedLabelText: UILabel = {
         let lbl = UILabel()
-        lbl.text = "To learn:"
+        lbl.text = "Untested:"
         lbl.font =  .rounded(ofSize: 14)
         lbl.textAlignment = .right
         lbl.textColor = .secondaryLabel
         return lbl
     }()
     
-    private let hStackTotal: UIStackView = {
+    private let hStackPassed: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.spacing = 4
@@ -70,7 +71,7 @@ final class StatsFooter: UICollectionReusableView {
         return stack
     }()
     
-    private let hStackLearned: UIStackView = {
+    private let hStackFailed: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.spacing = 4
@@ -79,7 +80,7 @@ final class StatsFooter: UICollectionReusableView {
         return stack
     }()
     
-    private let hStackToLearn: UIStackView = {
+    private let hStackUntested: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
         stack.spacing = 4
@@ -109,21 +110,21 @@ final class StatsFooter: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        hStackTotal.addArrangedSubview(totalLabelText)
-        hStackTotal.addArrangedSubview(totalLabel)
+        hStackFailed.addArrangedSubview(failedLabelText)
+        hStackFailed.addArrangedSubview(failedLabel)
         
-        hStackLearned.addArrangedSubview(learnedLabelText)
-        hStackLearned.addArrangedSubview(learnedLabel)
+        hStackPassed.addArrangedSubview(passedLabelText)
+        hStackPassed.addArrangedSubview(passedLabel)
         
-        hStackToLearn.addArrangedSubview(toLearnLabelText)
-        hStackToLearn.addArrangedSubview(toLearnLabel)
+        hStackUntested.addArrangedSubview(notTestedLabelText)
+        hStackUntested.addArrangedSubview(notTestedLabel)
         
-        hStackProgress.addArrangedSubview(hStackLearned)
-        hStackProgress.addArrangedSubview(hStackToLearn)
+        hStackProgress.addArrangedSubview(hStackFailed)
+        hStackProgress.addArrangedSubview(hStackPassed)
         
         //Horizontal Stack
-        hStack.addArrangedSubview(hStackTotal)
         hStack.addArrangedSubview(hStackProgress)
+        hStack.addArrangedSubview(hStackUntested)
         //hStack.addArrangedSubview(hStackLearned)
         //hStack.addArrangedSubview(hStackToLearn)
         
@@ -138,10 +139,10 @@ final class StatsFooter: UICollectionReusableView {
             //hStack.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
         
-        totalLabelText.setContentHuggingPriority(.required, for: .horizontal)
-        learnedLabel.setContentHuggingPriority(.required, for: .horizontal)
-        learnedLabelText.setContentHuggingPriority(.required, for:  .horizontal)
-        toLearnLabel.setContentHuggingPriority(.required, for: .horizontal)
+        passedLabelText.setContentHuggingPriority(.required, for: .horizontal)
+        failedLabel.setContentHuggingPriority(.required, for: .horizontal)
+        failedLabelText.setContentHuggingPriority(.required, for:  .horizontal)
+        notTestedLabel.setContentHuggingPriority(.required, for: .horizontal)
         //toLearnLabelText.setContentHuggingPriority(.required, for: .horizontal)
         
     }
@@ -151,21 +152,22 @@ final class StatsFooter: UICollectionReusableView {
     }
     
     
-    func configure(continent: ContinentStats) {
-        let learned = continent.learned
-        let total = continent.total
-        let toLearn = continent.toLearn
+    func configure(continent: ContinentTestStats) {
+        let passed = continent.passed
+        let failed = continent.failed
+        let untested = continent.untested
+        let progress = passed + failed
         
-        totalLabel.text = "\(total)"
-        learnedLabel.text = "\(learned)"
-        toLearnLabel.text = "\(toLearn)"
+        passedLabel.text = "\(passed)"
+        failedLabel.text = "\(failed)"
+        notTestedLabel.text = "\(untested)"
         
-        totalLabel.textColor = learned > 0 ? .secondaryLabel : .tertiaryLabel
-        learnedLabel.textColor = learned > 0 ? .secondaryLabel : .tertiaryLabel
-        toLearnLabel.textColor = learned > 0 ? .secondaryLabel : .tertiaryLabel
-        totalLabelText.textColor = learned > 0 ? .secondaryLabel : .tertiaryLabel
-        learnedLabelText.textColor = learned > 0 ? .secondaryLabel : .tertiaryLabel
-        toLearnLabelText.textColor = learned > 0 ? .secondaryLabel : .tertiaryLabel
+        passedLabel.textColor = progress > 0 ? .secondaryLabel : .tertiaryLabel
+        failedLabel.textColor = progress > 0 ? .secondaryLabel : .tertiaryLabel
+        notTestedLabel.textColor = progress > 0 ? .secondaryLabel : .tertiaryLabel
+        passedLabelText.textColor = progress > 0 ? .secondaryLabel : .tertiaryLabel
+        failedLabelText.textColor = progress > 0 ? .secondaryLabel : .tertiaryLabel
+        notTestedLabelText.textColor = progress > 0 ? .secondaryLabel : .tertiaryLabel
     }
     
 }

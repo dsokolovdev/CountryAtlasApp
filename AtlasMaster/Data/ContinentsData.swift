@@ -66,8 +66,10 @@ struct Progress {
     var left: [String]
 }
 
+
 struct ContinentStats {
     let name: String
+    
     let total: Int
     let learned: Int
     let toLearn: Int
@@ -76,3 +78,16 @@ struct ContinentStats {
     let toLearnProgress: Double
 }
 
+
+struct ContinentTestStats {
+    let name: String
+
+    let total: Int
+    let passed: Int
+    let failed: Int
+    let untested: Int
+
+    let finishedRatio: Double
+    let passedRatio: Double
+    let failedRatio: Double
+}

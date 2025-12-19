@@ -32,8 +32,15 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
     //Snapshots of Data
     private var snapshotWorld = World()
     private var snapshotStats: [ContinentStats] = []
+    private var snapshotTestStats: [ContinentTestStats] = []
     
     private var bottomControlWidthConstraint: NSLayoutConstraint!
+    
+    private var searchText: String = ""
+    //private var searchBar: UISearchBar?
+    private var searchController: UISearchController!
+    private var isKeyboardVisible = false
+    
     
     init(model: AtlasModel) {
         self.atlasModel = model
@@ -72,6 +79,7 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
         updateUIForConfig()
         setResetButtonState()
         
+        setupSearch()
         
         //title = "AtlasMaster"
         view.backgroundColor = .systemBackground
@@ -91,6 +99,20 @@ final class AtlasViewController: UIViewController, UICollectionViewDelegate {
             // Fallback for earlier iOS versions (no view-based initializer available).
             lightHaptic = UIImpactFeedbackGenerator(style: .light)
         }
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
     }
 }
 
@@ -266,11 +288,16 @@ extension AtlasViewController {
         collectionView.allowsSelection = true
         
         collectionView.register(CountryCell.self, forCellWithReuseIdentifier: CountryCell.reusedId)
-        collectionView.register(StatsCell.self, forCellWithReuseIdentifier: StatsCell.reusedId)
         collectionView.register(ContinentHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ContinentHeader.reuseId)
         collectionView.register(ContinentFooter.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: ContinentFooter.reuseId)
-        collectionView.register(StatsHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: StatsHeader.reusedId)
-        collectionView.register(StatsFooter.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: StatsFooter.reusedId)
+        
+        collectionView.register(LearnStatsCell.self, forCellWithReuseIdentifier: LearnStatsCell.reusedId)
+        collectionView.register(LearnStatsHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: LearnStatsHeader.reusedId)
+        collectionView.register(LearnStatsFooter.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: LearnStatsFooter.reusedId)
+        
+        collectionView.register(TestStatsCell.self, forCellWithReuseIdentifier: TestStatsCell.reusedId)
+        collectionView.register(TestStatHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TestStatHeader.reusedId)
+        collectionView.register(TestStatsFooter.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: TestStatsFooter.reusedId)
         
         view.addSubview(collectionView)
         
@@ -303,6 +330,7 @@ extension AtlasViewController {
         let searchButton = UIButton(type: .system)
         let image = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
         searchButton.setImage(image, for: .normal)
+        searchButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
         
         if #available(iOS 26.0, *) {
             let configuration = UIButton.Configuration.glass()
@@ -483,9 +511,9 @@ extension AtlasViewController {
     
     
     //MARK: - Seach Button Tapped
-    @objc func searchTapped() {
-        print("Search tapped")
-    }
+//    @objc func searchTapped() {
+//        navigationItem.searchController?.isActive = true
+//    }
     
     //MARK: - Update UI
     private func updateUIForConfig() {
@@ -521,7 +549,17 @@ extension AtlasViewController {
     }
     
     func reloadStatsSnapshot() {
-        snapshotStats = atlasModel.getStatistics()
+        switch atlasModel.currentConfig.mode {
+        case .learning:
+            snapshotStats =  atlasModel.getStatistics()
+        case .testing:
+            snapshotTestStats = atlasModel.getTestStatistics()
+        }
+    }
+    
+    func reloadStatsTestSnapshot() {
+        //snapshotStatsTest = atlasModel.getStatistics(for: .testing)
+        snapshotTestStats = atlasModel.getTestStatistics()
     }
     
 }
@@ -533,7 +571,12 @@ extension AtlasViewController: UICollectionViewDataSource {
         if displayMode == .list {
             return snapshotWorld.continents.count
         } else {
-            return snapshotStats.count
+            switch atlasModel.currentConfig.mode {
+            case .learning:
+                return snapshotStats.count
+            case .testing:
+                return snapshotTestStats.count
+            }
         }
     }
     
@@ -560,10 +603,18 @@ extension AtlasViewController: UICollectionViewDataSource {
             cell.configure(country: country, testingAspect: testingAspect, isTestingMode: isTestingMode, currentSegment: currentSegment)
             return cell
         } else {
-            let stats = snapshotStats[indexPath.section]
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StatsCell.reusedId, for: indexPath) as! StatsCell
-            cell.configure(with: stats)
-            return cell
+            switch atlasModel.currentConfig.mode {
+            case .learning:
+                let stats = snapshotStats[indexPath.section]
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: LearnStatsCell.reusedId, for: indexPath) as! LearnStatsCell
+                cell.configure(with: stats)
+                return cell
+            case .testing:
+                let stats = snapshotTestStats[indexPath.section]
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TestStatsCell.reusedId, for: indexPath) as! TestStatsCell
+                cell.configure(with: stats)
+                return cell
+            }
         }
     }
     
@@ -589,21 +640,41 @@ extension AtlasViewController: UICollectionViewDataSource {
                 return footer
             }
         } else {
-            //Display Statistics mode (segment 2)
-            let continent = snapshotStats[indexPath.section]
-            
-            //Header
-            if kind == UICollectionView.elementKindSectionHeader {
-                let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: StatsHeader.reusedId, for: indexPath) as! StatsHeader
-                header.configure(continent: continent)
-                return header
-            }
-            
-            //Footer
-            if kind == UICollectionView.elementKindSectionFooter {
-                let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: StatsFooter.reusedId, for: indexPath) as! StatsFooter
-                footer.configure(continent: continent)
-                return footer
+            switch atlasModel.currentConfig.mode {
+            case .learning:
+                //Display Statistics mode (segment 2)
+                let continent = snapshotStats[indexPath.section]
+                
+                //Header
+                if kind == UICollectionView.elementKindSectionHeader {
+                    let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: LearnStatsHeader.reusedId, for: indexPath) as! LearnStatsHeader
+                    header.configure(continent: continent)
+                    return header
+                }
+                
+                //Footer
+                if kind == UICollectionView.elementKindSectionFooter {
+                    let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: LearnStatsFooter.reusedId, for: indexPath) as! LearnStatsFooter
+                    footer.configure(continent: continent)
+                    return footer
+                }
+            case .testing:
+                //Display Statistics mode (segment 2)
+                let continent = snapshotTestStats[indexPath.section]
+                
+                //Header
+                if kind == UICollectionView.elementKindSectionHeader {
+                    let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: TestStatHeader.reusedId, for: indexPath) as! TestStatHeader
+                    header.configure(continent: continent)
+                    return header
+                }
+                
+                //Footer
+                if kind == UICollectionView.elementKindSectionFooter {
+                    let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: TestStatsFooter.reusedId, for: indexPath) as! TestStatsFooter
+                    footer.configure(continent: continent)
+                    return footer
+                }
             }
         }
         
@@ -616,6 +687,7 @@ extension AtlasViewController {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard atlasModel.currentConfig.mode == .testing else { return }
         guard bottomControl.currentTestingSegment == .untested else { return }
+        guard !isKeyboardVisible else { return }
         
         let country = snapshotWorld.continents[indexPath.section].countries[indexPath.item]
         let style: TestQuestionViewController.OptionSytle = atlasModel.testingAspect == .flag ? .flag : .text
@@ -701,5 +773,74 @@ extension AtlasViewController {
         case .testing:
             resetButton.isEnabled =  atlasModel.startedTesting ? true : false
         }
+    }
+}
+
+//MARK: - Search
+extension AtlasViewController {
+    private func setupSearch() {
+        searchController = UISearchController(searchResultsController: nil)
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search"
+        searchController.searchBar.delegate = self
+        searchController.delegate = self
+
+        // кнопка Done на клавиатуре
+        searchController.searchBar.returnKeyType = .done
+
+        // важно
+        definesPresentationContext = true
+    }
+    
+    @objc private func searchTapped() {
+        present(searchController, animated: true)
+    }
+}
+
+extension AtlasViewController: UISearchBarDelegate, UISearchControllerDelegate {
+
+//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+//        atlasModel.setSearchQuery(searchText)
+//        reloadSnapshot()
+//    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            atlasModel.setSearchQuery(nil)   // 🔥 СБРОС
+        } else {
+            atlasModel.setSearchQuery(searchText)
+        }
+        reloadSnapshot()
+    }
+
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        
+        atlasModel.setSearchQuery(nil)
+        reloadSnapshot()
+    }
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder() // скрыть клавиатуру (Done)
+    }
+    
+    func didDismissSearchController(_ searchController: UISearchController) {
+            atlasModel.setSearchQuery(nil)
+            reloadSnapshot()
+        }
+    
+//    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+//            atlasModel.setSearchQuery(nil)   // 🔥 сброс поиска
+//            reloadSnapshot()                 // 🔥 вернуть полный список
+//        }
+}
+
+//MARK: - Keyboard Show/Hide methods
+extension AtlasViewController {
+    @objc private func keyboardWillShow() {
+        isKeyboardVisible = true
+    }
+
+    @objc private func keyboardWillHide() {
+        isKeyboardVisible = false
     }
 }

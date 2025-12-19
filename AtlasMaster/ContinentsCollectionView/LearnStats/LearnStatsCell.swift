@@ -6,10 +6,10 @@
 //
 import UIKit
 
-final class StatsCell: UICollectionViewCell {
-    static let reusedId = "StatsCell"
+final class LearnStatsCell: UICollectionViewCell {
+    static let reusedId = "LearnStatsCell"
     
-    let progressView = RoundedProgressView()
+    let progressView = LearnProgressView()
     
     private let learnedProgressLabel: UILabel = {
         let lbl = UILabel()

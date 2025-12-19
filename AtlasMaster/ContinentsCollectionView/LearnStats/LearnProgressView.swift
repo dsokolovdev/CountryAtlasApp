@@ -6,7 +6,7 @@
 //
 import UIKit
 
-final class RoundedProgressView: UIView {
+final class LearnProgressView: UIView {
 
     private let trackView = UIView()
     private let fillView = UIView()

@@ -20,6 +20,8 @@ final class AtlasModel {
     private let service = CountryService()
     private let dataStore = DataStore()
     
+    private var searchQuery: String?
+    
     
     func filteredWorld() -> World {
         guard let world = world else { return World() }
@@ -42,6 +44,9 @@ final class AtlasModel {
             
             // фильтр по изученности
             let filteredCountries = continent.countries.filter { country in
+                
+                guard matchesSearch(continent: continent.name, country: country) else { return false }
+                
                 if currentStudyMode == .learning {
                     switch filterMode {
                     case 0: return !country.isLearned // To learn
@@ -105,8 +110,11 @@ final class AtlasModel {
             toLearnProgress: 1 - learnedRatio
         )
         
+        let continentsForStats = world.continents.filter { matchesContinentStats(name: $0.name) }
+        
         // Continent stats
-        let continentStats = world.continents.map { c in
+        let continentStats = continentsForStats.map { c in
+            
             let total = c.countries.count
             let learned = c.countries.filter { $0.isLearned }.count
             let toLearn = total - learned
@@ -132,6 +140,138 @@ final class AtlasModel {
         
         return [worldStats] + sortedContinents
     }
+    
+    
+//    func getTestStatistics() -> [ContinentTestStats] {
+//        guard let world else { return [] }
+//
+//        let aspect = testingAspect
+//
+//        // фильтр континентов по поиску (как в learning stats)
+//        let continentsForStats = world.continents
+//            .filter { matchesContinentStats(name: $0.name) }
+//
+//        let continentStats = continentsForStats.map { continent -> ContinentTestStats in
+//            let countries = continent.countries
+//
+//            let total = countries.count
+//
+//            let passed = countries.filter {
+//                ($0.testResults[aspect] ?? .notTested) == .passed
+//            }.count
+//
+//            let failed = countries.filter {
+//                ($0.testResults[aspect] ?? .notTested) == .failed
+//            }.count
+//
+//            let untested = countries.filter {
+//                ($0.testResults[aspect] ?? .notTested) == .notTested
+//            }.count
+//
+//            let finished = passed + failed
+//
+//            let finishedRatio =
+//                total > 0 ? Double(finished) / Double(total) : 0
+//
+//            let passedRatio =
+//                finished > 0 ? Double(passed) / Double(finished) : 0
+//
+//            let failedRatio =
+//                finished > 0 ? Double(failed) / Double(finished) : 0
+//
+//            return ContinentTestStats(
+//                name: continent.name,
+//                total: total,
+//                passed: passed,
+//                failed: failed,
+//                untested: untested,
+//                finishedRatio: finishedRatio,
+//                passedRatio: passedRatio,
+//                failedRatio: failedRatio
+//            )
+//        }
+//
+//        // сортировка — сначала более завершённые
+//        let sorted = continentStats.sorted {
+//            if $0.finishedRatio != $1.finishedRatio {
+//                return $0.finishedRatio > $1.finishedRatio
+//            } else {
+//                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+//            }
+//        }
+//
+//        return sorted
+//    }
+    
+    func getTestStatistics() -> [ContinentTestStats] {
+            guard let world else { return [] }
+
+            let aspect = testingAspect
+
+            // 🔹 Фильтруем континенты по search (как в learning stats)
+            let continentsForStats = world.continents.filter {
+                matchesContinentStats(name: $0.name)
+            }
+
+            // MARK: - World stats
+
+            // MARK: - World stats (❗️БЕЗ search-фильтра)
+
+            let allWorldCountries = world.continents.flatMap { $0.countries }
+
+            let worldPassed = allWorldCountries.filter { $0.testResults[aspect] == .passed }.count
+            let worldFailed = allWorldCountries.filter { $0.testResults[aspect] == .failed }.count
+            let worldUntested = allWorldCountries.filter { ($0.testResults[aspect] ?? .notTested) == .notTested }.count
+
+            let worldTotal = allWorldCountries.count
+            let worldFinished = worldPassed + worldFailed
+
+            let worldStats = ContinentTestStats(
+                name: "World",
+                total: worldTotal,
+                passed: worldPassed,
+                failed: worldFailed,
+                untested: worldUntested,
+                finishedRatio: worldTotal > 0 ? Double(worldFinished) / Double(worldTotal) : 0,
+                passedRatio: worldFinished > 0 ? Double(worldPassed) / Double(worldFinished) : 0,
+                failedRatio: worldFinished > 0 ? Double(worldFailed) / Double(worldFinished) : 0
+            )
+
+            // MARK: - Continent stats
+
+            let continentStats: [ContinentTestStats] = continentsForStats.map { continent in
+                let countries = continent.countries
+
+                let passed = countries.filter { $0.testResults[aspect] == .passed }.count
+                let failed = countries.filter { $0.testResults[aspect] == .failed }.count
+                let untested = countries.filter { ($0.testResults[aspect] ?? .notTested) == .notTested }.count
+                let total = countries.count
+                let finished = passed + failed
+
+                return ContinentTestStats(
+                    name: continent.name,
+                    total: total,
+                    passed: passed,
+                    failed: failed,
+                    untested: untested,
+                    finishedRatio: total > 0 ? Double(finished) / Double(total) : 0,
+                    passedRatio: finished > 0 ? Double(passed) / Double(finished) : 0,
+                    failedRatio: finished > 0 ? Double(failed) / Double(finished) : 0
+                )
+            }
+
+            // MARK: - Sorting (по завершённости, затем по имени)
+
+            let sortedContinents = continentStats.sorted {
+                if $0.finishedRatio != $1.finishedRatio {
+                    return $0.finishedRatio > $1.finishedRatio
+                } else {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+            }
+
+            return [worldStats] + sortedContinents
+        }
     
     //MARK: - Update Reset Button state
     private func updateStartedLearningFlag() {
@@ -286,59 +426,7 @@ final class AtlasModel {
 
 //MARK: - Make Questions
 extension AtlasModel {
-    
-//    func makeTestQuestion(for country: Country) -> TestQuestion {
-//        let aspect = testingAspect
-//
-//        let correctOption: TestOption
-//        switch aspect {
-//        case .capital:
-//            correctOption = TestOption(title: country.capital)
-//        case .country:
-//            correctOption = TestOption(title: country.name)
-//        case .flag:
-//            correctOption = TestOption(title: country.flag)
-//        }
-//
-//        var options = [correctOption]
-//
-//        let distractors = randomDistractors(for: aspect, excluding: country, count: 3)
-//        options.append(contentsOf: distractors)
-//
-//        options.shuffle()
-//
-//        let correctIndex = options.firstIndex(where: { $0 == correctOption })!
-//
-//        return TestQuestion(country: country, options: options, correctIndex: correctIndex)
-//    }
-//    func makeTestQuestion(for country: Country) -> TestQuestion {
-//        let aspect = testingAspect
-//
-//        let correctTitle: String
-//        switch aspect {
-//        case .capital:
-//            correctTitle = country.capital
-//        case .country:
-//            correctTitle = country.name
-//        case .flag:
-//            correctTitle = country.flag
-//        }
-//
-//        var titles = Set<String>()
-//        titles.insert(correctTitle)
-//
-//        let distractors = randomDistractorTitles(for: aspect, excluding: country, count: 3)
-//
-//        titles.formUnion(distractors)
-//
-//        // если вдруг не набралось 4 — можно добрать или оставить как есть
-//        let options = titles.map { TestOption(title: $0) }.shuffled()
-//
-//        let correctIndex = options.firstIndex { $0.title == correctTitle }!
-//
-//        return TestQuestion(country: country, options: options, correctIndex: correctIndex)
-//    }
-    
+
     func makeTestQuestion(for country: Country) -> TestQuestion {
         let aspect = testingAspect
 
@@ -413,84 +501,6 @@ extension AtlasModel {
 
         return result
     }
-
-    
-//    func randomDistractorTitles(for aspect: TestingAspect, excluding country: Country, count: Int) -> Set<String> {
-//
-//        guard let world else { return [] }
-//
-//        let selectedRegion = currentConfig.region
-//
-//        let pool = world.continents.filter { continent in
-//                switch selectedRegion {
-//                case .world:
-//                    return true
-//                case .continent(let name):
-//                    return continent.name == name
-//                }
-//            }.flatMap { $0.countries }.filter {
-//                $0 != country &&
-//                ($0.testResults[aspect] ?? .notTested) == .notTested
-//            }
-//
-//        var result = Set<String>()
-//
-//        for country in pool.shuffled() {
-//            let title: String
-//            switch aspect {
-//            case .capital:
-//                title = country.capital
-//            case .country:
-//                title = country.name
-//            case .flag:
-//                title = country.flag
-//            }
-//
-//            result.insert(title)
-//
-//            if result.count == count {
-//                break
-//            }
-//        }
-//
-//        return result
-//    }
-    
-//    func randomDistractors(for aspect: TestingAspect,excluding country: Country,count: Int) -> [TestOption] {
-//        
-//        guard let world else { return [] }
-//
-//        let selectedRegion = currentConfig.region
-//        
-//        let pool: [Country] = world.continents.filter { continent in
-//            switch selectedRegion {
-//            case .world:
-//                return true
-//            case .continent(let name):
-//                return continent.name == name
-//            }
-//        }.flatMap { $0.countries }
-//            .filter {
-//                $0 != country && $0.testResults[aspect] ?? .notTested == .notTested
-//        }
-//        
-//        //print(pool)
-//        
-//        guard pool.count >= count else { return [] }
-//        
-//        let selected = pool.shuffled().prefix(count)
-//        
-//        return selected.map {
-//            switch aspect {
-//            case .capital:
-//                return TestOption(title: $0.capital)
-//            case .country:
-//                return TestOption(title: $0.name)
-//            case .flag:
-//                return TestOption(title: $0.flag)
-//            }
-//        }
-//    }
     
     func updateTestResult(for country: Country, aspect: TestingAspect, result: Bool) {
         guard
@@ -508,4 +518,55 @@ extension AtlasModel {
 
         onWorldUpdated?()
     }
+}
+
+extension AtlasModel {
+    func setSearchQuery(_ query: String?) {
+        searchQuery = query?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    //MARK: - Search Filters
+    private func searchFlags() -> (continent: Bool, country: Bool, capital: Bool) {
+        let mode = currentConfig.mode
+        let segment = filterMode
+        let aspect = testingAspect
+        
+        switch mode {
+        case .learning:
+            if segment == 2 { return (true, false, false ) }
+            return (true , true, true)
+        case .testing:
+            if segment == 1 || segment == 2 { return (true, true, true ) }
+            if segment == 3 { return (true, false, false ) }
+            
+            switch aspect {
+            case .capital:
+                return (true, true, false)
+            case .country:
+                return (true, false, true)
+            case .flag:
+                return (true, true, true)
+            }
+        }
+    }
+    
+    private func matchesSearch(continent: String, country: Country) -> Bool {
+        guard let q = searchQuery?.trimmingCharacters(in: .whitespacesAndNewlines), !q.isEmpty else { return true }
+        
+        let flags = searchFlags()
+        
+        if flags.continent, continent.localizedCaseInsensitiveContains(q) { return true }
+        if flags.country,   country.name.localizedCaseInsensitiveContains(q) { return true }
+        if flags.capital,   country.capital.localizedCaseInsensitiveContains(q) { return true }
+        
+        return false
+    }
+    
+    private func matchesContinentStats(name: String) -> Bool {
+        guard let q = searchQuery?.trimmingCharacters(in: .whitespacesAndNewlines), !q.isEmpty
+        else { return true }
+        
+        return name.localizedCaseInsensitiveContains(q)
+    }
+    
 }
