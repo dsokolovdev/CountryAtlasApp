@@ -7,26 +7,26 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		A1E96E472EE4C0DC000949DE /* AtlasMaster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AtlasMaster.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1E96E472EE4C0DC000949DE /* CountryMaster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CountryMaster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A1E96E592EE4C0DE000949DE /* Exceptions for "AtlasMaster" folder in "AtlasMaster" target */ = {
+		A1E96E592EE4C0DE000949DE /* Exceptions for "CountryMaster" folder in "CountryMaster" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = A1E96E462EE4C0DC000949DE /* AtlasMaster */;
+			target = A1E96E462EE4C0DC000949DE /* CountryMaster */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A1E96E492EE4C0DC000949DE /* AtlasMaster */ = {
+		A1E96E492EE4C0DC000949DE /* CountryMaster */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				A1E96E592EE4C0DE000949DE /* Exceptions for "AtlasMaster" folder in "AtlasMaster" target */,
+				A1E96E592EE4C0DE000949DE /* Exceptions for "CountryMaster" folder in "CountryMaster" target */,
 			);
-			path = AtlasMaster;
+			path = CountryMaster;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +45,7 @@
 		A1E96E3E2EE4C0DC000949DE = {
 			isa = PBXGroup;
 			children = (
-				A1E96E492EE4C0DC000949DE /* AtlasMaster */,
+				A1E96E492EE4C0DC000949DE /* CountryMaster */,
 				A1E96E482EE4C0DC000949DE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		A1E96E482EE4C0DC000949DE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A1E96E472EE4C0DC000949DE /* AtlasMaster.app */,
+				A1E96E472EE4C0DC000949DE /* CountryMaster.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A1E96E462EE4C0DC000949DE /* AtlasMaster */ = {
+		A1E96E462EE4C0DC000949DE /* CountryMaster */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A1E96E5A2EE4C0DE000949DE /* Build configuration list for PBXNativeTarget "AtlasMaster" */;
+			buildConfigurationList = A1E96E5A2EE4C0DE000949DE /* Build configuration list for PBXNativeTarget "CountryMaster" */;
 			buildPhases = (
 				A1E96E432EE4C0DC000949DE /* Sources */,
 				A1E96E442EE4C0DC000949DE /* Frameworks */,
@@ -74,13 +74,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A1E96E492EE4C0DC000949DE /* AtlasMaster */,
+				A1E96E492EE4C0DC000949DE /* CountryMaster */,
 			);
-			name = AtlasMaster;
+			name = CountryMaster;
 			packageProductDependencies = (
 			);
 			productName = AtlasMaster;
-			productReference = A1E96E472EE4C0DC000949DE /* AtlasMaster.app */;
+			productReference = A1E96E472EE4C0DC000949DE /* CountryMaster.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A1E96E422EE4C0DC000949DE /* Build configuration list for PBXProject "AtlasMaster" */;
+			buildConfigurationList = A1E96E422EE4C0DC000949DE /* Build configuration list for PBXProject "CountryMaster" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A1E96E462EE4C0DC000949DE /* AtlasMaster */,
+				A1E96E462EE4C0DC000949DE /* CountryMaster */,
 			);
 		};
 /* End PBXProject section */
@@ -147,7 +147,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B9V2S6X232;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = AtlasMaster/Info.plist;
+				INFOPLIST_FILE = CountryMaster/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CountryMaster;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -181,7 +181,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B9V2S6X232;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = AtlasMaster/Info.plist;
+				INFOPLIST_FILE = CountryMaster/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = CountryMaster;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -330,7 +330,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A1E96E422EE4C0DC000949DE /* Build configuration list for PBXProject "AtlasMaster" */ = {
+		A1E96E422EE4C0DC000949DE /* Build configuration list for PBXProject "CountryMaster" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1E96E5D2EE4C0DE000949DE /* Debug */,
@@ -339,7 +339,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A1E96E5A2EE4C0DE000949DE /* Build configuration list for PBXNativeTarget "AtlasMaster" */ = {
+		A1E96E5A2EE4C0DE000949DE /* Build configuration list for PBXNativeTarget "CountryMaster" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1E96E5B2EE4C0DE000949DE /* Debug */,
