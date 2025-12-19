@@ -291,5 +291,16 @@ final class BottomControlBar: UIView {
         updateSegmentAppearance()
         onTestingChanged?(segment)
     }
+    
+    //MARK: - Reset State
+    func resetToFirstSegment() {
+        switch mode {
+        case .learning:
+            learningSegment.selectedSegmentIndex = 0
+        case .testing:
+            testingSegment.selectedSegmentIndex = 0
+        }
+        updateSegmentAppearance()
+    }
 }
 
