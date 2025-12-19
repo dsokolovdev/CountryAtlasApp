@@ -2,141 +2,174 @@
 //  TestProgressView.swift
 //  AtlasMaster
 //
-//  Created by Dmitri  on 18.12.25.
+//  Created by Dmitri on 18.12.25.
+//
+//  Description:
+//  Custom progress view for Testing statistics.
+//  Displays a three-state progress:
+//  - Finished (passed + failed)
+//  - Passed (inside finished)
+//  - Failed (inside finished)
+//  Remaining empty area represents Untested items.
 //
 
 import UIKit
 
+// MARK: - Test Progress View
+
 final class TestProgressView: UIView {
 
-    // MARK: - UI
+// MARK: - UI Elements
 
-    private let outerTrack = UIView()
-    private let outerFill  = UIView()
+/// Outer track representing total scope (untested + finished)
+private let outerTrack = UIView()
 
-    private let innerTrack = UIView()
-    private let innerFill  = UIView()
+/// Filled part representing finished (passed + failed)
+private let outerFill  = UIView()
 
-    private var outerFillWidth: NSLayoutConstraint!
-    private var innerFillWidth: NSLayoutConstraint!
+/// Track inside finished representing failed + passed
+private let innerTrack = UIView()
 
-    // MARK: - Init
+/// Filled part inside finished representing passed
+private let innerFill  = UIView()
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
-    }
+// MARK: - Constraints
 
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
-    }
+/// Width constraint for finished progress
+private var outerFillWidth: NSLayoutConstraint!
 
-    // MARK: - Setup
+/// Width constraint for passed / failed progress inside finished
+private var innerFillWidth: NSLayoutConstraint!
 
-    private func setup() {
-        layer.cornerRadius = 20
-        layer.borderWidth = 3
-        layer.borderColor = UIColor.systemGray6.cgColor
-        clipsToBounds = true
-        
-        //translatesAutoresizingMaskIntoConstraints = false
+// MARK: - Initialization
 
-        outerTrack.translatesAutoresizingMaskIntoConstraints = false
-        outerFill.translatesAutoresizingMaskIntoConstraints = false
-        innerTrack.translatesAutoresizingMaskIntoConstraints = false
-        innerFill.translatesAutoresizingMaskIntoConstraints = false
+override init(frame: CGRect) {
+    super.init(frame: frame)
+    setup()
+}
 
-        // Визуальные стили (поставь свои AppColors)
-        outerTrack.backgroundColor = UIColor.systemGray6.withAlphaComponent(0.2) // Left track
-        //backgroundColor  = AppColors.greyblue.withAlphaComponent(0.35) // Finished fill (контейнер)
+required init?(coder: NSCoder) {
+    super.init(coder: coder)
+    setup()
+}
 
-        innerTrack.backgroundColor = .wildGreen.withAlphaComponent(0.85)  // passed track
-        innerFill.backgroundColor  = .fuchsiaBlush.withAlphaComponent(0.95) // fa fill
+// MARK: - View Setup
 
-        outerTrack.layer.cornerRadius = 10
-        outerFill.layer.cornerRadius = 10
-        innerTrack.layer.cornerRadius = 10
-        innerFill.layer.cornerRadius = 10
+/// Configures view hierarchy, layout and default appearance
+private func setup() {
+    layer.cornerRadius = 20
+    layer.borderWidth = 3
+    layer.borderColor = UIColor.systemGray6.cgColor
+    clipsToBounds = true
 
-        outerTrack.clipsToBounds = true
-        outerFill.clipsToBounds = true // 🔥 важно: внутренний прогресс обрезается по Finished
+    outerTrack.translatesAutoresizingMaskIntoConstraints = false
+    outerFill.translatesAutoresizingMaskIntoConstraints = false
+    innerTrack.translatesAutoresizingMaskIntoConstraints = false
+    innerFill.translatesAutoresizingMaskIntoConstraints = false
 
-        addSubview(outerTrack)
-        outerTrack.addSubview(outerFill)
+    // Visual styles
+    outerTrack.backgroundColor = UIColor.systemGray6.withAlphaComponent(0.2) // Untested area
+    innerTrack.backgroundColor = .wildGreen.withAlphaComponent(0.85)          // Failed area
+    innerFill.backgroundColor  = .fuchsiaBlush.withAlphaComponent(0.95)       // Passed area
 
-        outerFill.addSubview(innerTrack)
-        innerTrack.addSubview(innerFill)
+    outerTrack.layer.cornerRadius = 10
+    outerFill.layer.cornerRadius = 10
+    innerTrack.layer.cornerRadius = 10
+    innerFill.layer.cornerRadius = 10
 
-        // outerTrack
-        NSLayoutConstraint.activate([
-            outerTrack.topAnchor.constraint(equalTo: topAnchor),
-            outerTrack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            outerTrack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            outerTrack.bottomAnchor.constraint(equalTo: bottomAnchor),
-            //outerTrack.heightAnchor.constraint(equalToConstant: 20)
-        ])
+    outerTrack.clipsToBounds = true
+    outerFill.clipsToBounds = true   // Ensures inner progress is clipped to finished width
 
-        // outerFill (Finished)
-        outerFillWidth = outerFill.widthAnchor.constraint(equalToConstant: 0)
+    // View hierarchy
+    addSubview(outerTrack)
+    outerTrack.addSubview(outerFill)
+    outerFill.addSubview(innerTrack)
+    innerTrack.addSubview(innerFill)
 
-        NSLayoutConstraint.activate([
-            outerFill.topAnchor.constraint(equalTo: outerTrack.topAnchor),
-            outerFill.leadingAnchor.constraint(equalTo: outerTrack.leadingAnchor),
-            outerFill.bottomAnchor.constraint(equalTo: outerTrack.bottomAnchor),
-            outerFillWidth
-        ])
+    // MARK: Layout Constraints
 
-        // innerTrack (Failed) — внутри finished-части на всю ширину finished
-        NSLayoutConstraint.activate([
-            innerTrack.topAnchor.constraint(equalTo: outerFill.topAnchor),
-            innerTrack.leadingAnchor.constraint(equalTo: outerFill.leadingAnchor),
-            innerTrack.trailingAnchor.constraint(equalTo: outerFill.trailingAnchor),
-            innerTrack.bottomAnchor.constraint(equalTo: outerFill.bottomAnchor),
-        ])
+    // Outer track fills entire view
+    NSLayoutConstraint.activate([
+        outerTrack.topAnchor.constraint(equalTo: topAnchor),
+        outerTrack.leadingAnchor.constraint(equalTo: leadingAnchor),
+        outerTrack.trailingAnchor.constraint(equalTo: trailingAnchor),
+        outerTrack.bottomAnchor.constraint(equalTo: bottomAnchor)
+    ])
 
-        // innerFill (Passed)
-        innerFillWidth = innerFill.widthAnchor.constraint(equalToConstant: 0)
+    // Finished progress (outerFill)
+    outerFillWidth = outerFill.widthAnchor.constraint(equalToConstant: 0)
 
-        NSLayoutConstraint.activate([
-            innerFill.topAnchor.constraint(equalTo: innerTrack.topAnchor),
-            innerFill.leadingAnchor.constraint(equalTo: innerTrack.leadingAnchor),
-            innerFill.bottomAnchor.constraint(equalTo: innerTrack.bottomAnchor),
-            innerFillWidth
-        ])
-    }
+    NSLayoutConstraint.activate([
+        outerFill.topAnchor.constraint(equalTo: outerTrack.topAnchor),
+        outerFill.leadingAnchor.constraint(equalTo: outerTrack.leadingAnchor),
+        outerFill.bottomAnchor.constraint(equalTo: outerTrack.bottomAnchor),
+        outerFillWidth
+    ])
 
-    // MARK: - Public API
+    // Failed + passed track inside finished
+    NSLayoutConstraint.activate([
+        innerTrack.topAnchor.constraint(equalTo: outerFill.topAnchor),
+        innerTrack.leadingAnchor.constraint(equalTo: outerFill.leadingAnchor),
+        innerTrack.trailingAnchor.constraint(equalTo: outerFill.trailingAnchor),
+        innerTrack.bottomAnchor.constraint(equalTo: outerFill.bottomAnchor)
+    ])
 
-    /// total = total countries shown in this continent (or total in region)
-    func setProgress(total: Int, passed: Int, failed: Int, animated: Bool = true) {
-        let finished = passed + failed
+    // Passed progress inside finished
+    innerFillWidth = innerFill.widthAnchor.constraint(equalToConstant: 0)
 
-        let finishedRatio = total > 0 ? CGFloat(finished) / CGFloat(total) : 0
-        let passedRatioWithinFinished = finished > 0 ? CGFloat(passed) / CGFloat(finished) : 0
+    NSLayoutConstraint.activate([
+        innerFill.topAnchor.constraint(equalTo: innerTrack.topAnchor),
+        innerFill.leadingAnchor.constraint(equalTo: innerTrack.leadingAnchor),
+        innerFill.bottomAnchor.constraint(equalTo: innerTrack.bottomAnchor),
+        innerFillWidth
+    ])
+}
 
-        layoutIfNeeded()
+// MARK: - Progress Update
 
-        let fullWidth = outerTrack.bounds.width
-        let finishedWidth = fullWidth * finishedRatio
-        //let passedWidth = finishedWidth * passedRatioWithinFinished
-        let failedWidth = finishedWidth * (1 - passedRatioWithinFinished)
+/// Updates progress values
+/// - Parameters:
+///   - total: Total number of items
+///   - passed: Number of passed items
+///   - failed: Number of failed items
+///   - animated: Whether to animate progress change
+func setProgress(total: Int, passed: Int, failed: Int, animated: Bool = true) {
+    let finished = passed + failed
 
-        outerFillWidth.constant = max(0, finishedWidth)   // finished
-        innerFillWidth.constant = max(0, failedWidth)     // passed внутри finished
+    let finishedRatio = total > 0 ? CGFloat(finished) / CGFloat(total) : 0
+    let passedRatioWithinFinished = finished > 0 ? CGFloat(passed) / CGFloat(finished) : 0
 
-        if animated {
-            UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut, .allowUserInteraction]) {
-                self.layoutIfNeeded()
-            }
-        } else {
-            layoutIfNeeded()
+    layoutIfNeeded()
+
+    let fullWidth = outerTrack.bounds.width
+    let finishedWidth = fullWidth * finishedRatio
+    let failedWidth = finishedWidth * (1 - passedRatioWithinFinished)
+
+    outerFillWidth.constant = max(0, finishedWidth)   // Finished
+    innerFillWidth.constant = max(0, failedWidth)     // Passed inside finished
+
+    if animated {
+        UIView.animate(withDuration: 0.25,
+                       delay: 0,
+                       options: [.curveEaseInOut, .allowUserInteraction]) {
+            self.layoutIfNeeded()
         }
+    } else {
+        layoutIfNeeded()
     }
-    
-    func setFillColor(_ passedColor: UIColor, failedColor: UIColor, left: UIColor) {
-        outerTrack.backgroundColor = left
-        innerTrack.backgroundColor = passedColor   // track = failed
-        innerFill.backgroundColor  = failedColor   // fill  = passed
-    }
+}
+
+// MARK: - Appearance
+
+/// Sets custom colors for progress segments
+/// - Parameters:
+///   - passedColor: Color for passed segment
+///   - failedColor: Color for failed segment
+///   - left: Color for untested segment
+func setFillColor(_ passedColor: UIColor, failedColor: UIColor, left: UIColor) {
+    outerTrack.backgroundColor = left
+    innerTrack.backgroundColor = passedColor
+    innerFill.backgroundColor  = failedColor
+}
+
 }

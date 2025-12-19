@@ -7,6 +7,14 @@
 
 import UIKit
 
+
+// MARK: - AppColors
+/// Namespace for all custom application colors.
+/// Usage example:
+/// ```swift
+/// view.backgroundColor = AppColors.marine
+/// label.textColor = AppColors.greyblue
+/// ```
 enum AppColors {
     
     // MARK: - Main Colors

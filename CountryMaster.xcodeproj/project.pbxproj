@@ -148,6 +148,7 @@
 				DEVELOPMENT_TEAM = B9V2S6X232;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AtlasMaster/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CountryMaster;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -159,7 +160,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dsokolovdev.AtlasMaster;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dsokolovdev.CountryMaster;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -181,6 +182,7 @@
 				DEVELOPMENT_TEAM = B9V2S6X232;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AtlasMaster/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CountryMaster;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -192,7 +194,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.dsokolovdev.AtlasMaster;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dsokolovdev.CountryMaster;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
