@@ -71,6 +71,10 @@ This project demonstrates practical UIKit skills, state-driven UI updates, and c
   - compositional layout (statistics)
 - **MVC architecture**
 - Persistence via **UserDefaults** and **FileManager**
+- **Data & Networking**
+	- Country and continent data loaded from REST Countries API.
+	- JSON decoding and model mapping.
+	- Network layer isolated from UI logic.
 - Adaptive layout using `scaleFactor`
 - Custom UI components:
   - `BottomControlBar`
