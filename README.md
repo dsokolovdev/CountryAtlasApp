@@ -1,4 +1,4 @@
-# DicePro
+# CountryMaster
 
 CountryMaster is a lightweight iOS app for learning and testing world geography.
 Built with UIKit and a fully programmatic UI, the app focuses on clarity, smooth interactions, and a distraction-free learning experience.
