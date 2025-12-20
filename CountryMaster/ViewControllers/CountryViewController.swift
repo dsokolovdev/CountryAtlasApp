@@ -83,6 +83,8 @@ final class CountryViewController: UIViewController, UICollectionViewDelegate {
     /// Used to avoid starting a test question while the keyboard is up.
     private var isKeyboardVisible = false
     
+    private var bottomBlurView: UIVisualEffectView!
+    
     
     // MARK: - Init
     init(model: CountryModel) {
@@ -193,15 +195,15 @@ extension CountryViewController {
     /// - testing: modeButton + testAspectButton
     func setupRightButtonItems() {
         let rightItems: [UIBarButtonItem] = countryModel.currentConfig.mode == .learning ? [modeButton] : [modeButton, testAspectButton]
-
+        
         guard let navigationBar = navigationController?.navigationBar else {
             navigationItem.rightBarButtonItems = rightItems
             return
         }
-
+        
         UIView.transition(with: navigationBar, duration: 0.25, options: [.transitionCrossDissolve], animations: {
-                self.navigationItem.rightBarButtonItems = rightItems
-            }
+            self.navigationItem.rightBarButtonItems = rightItems
+        }
         )
     }
     
@@ -421,13 +423,28 @@ extension CountryViewController {
     /// Creates bottom control bar + search button, embeds them in a horizontal stack,
     /// and pins to bottom with margins.
     func setupBottomControlBar() {
+        // Main bottom control (segmented bar)
         bottomControl = BottomControlBar()
         
+        // Container used ONLY to render shadow
+        let shadowView = UIView()
+        shadowView.translatesAutoresizingMaskIntoConstraints = false
+        shadowView.layer.shadowColor = UIColor.label.cgColor
+        shadowView.layer.shadowOpacity = 0.15
+        shadowView.layer.shadowRadius = 8.scaled
+        shadowView.layer.shadowOffset = CGSize(width: 0, height: 4)
+        shadowView.layer.masksToBounds = false
+        
+        // Search button
         let searchButton = UIButton(type: .system)
-        let image = UIImage(systemName: "magnifyingglass", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
+        let image = UIImage(
+            systemName: "magnifyingglass",
+            withConfiguration: UIImage.SymbolConfiguration(weight: .semibold)
+        )
         searchButton.setImage(image, for: .normal)
         searchButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
         
+        // iOS 26 glass style / fallback styling
         if #available(iOS 26.0, *) {
             let configuration = UIButton.Configuration.glass()
             searchButton.configuration = configuration
@@ -445,12 +462,14 @@ extension CountryViewController {
             searchButton.tintColor = .greyBlue
         }
         
+        // Fixed size for search button
         let d: CGFloat = 56.scaled
         NSLayoutConstraint.activate([
             searchButton.widthAnchor.constraint(equalToConstant: d),
             searchButton.heightAnchor.constraint(equalToConstant: d)
         ])
         
+        // Horizontal stack: bottom control + search button
         bottomControlStack = UIStackView(arrangedSubviews: [bottomControl, searchButton])
         bottomControlStack.axis = .horizontal
         bottomControlStack.alignment = .center
@@ -458,20 +477,34 @@ extension CountryViewController {
         bottomControlStack.distribution = .equalSpacing
         bottomControlStack.translatesAutoresizingMaskIntoConstraints = false
         
-        view.addSubview(bottomControlStack)
+        // Shadow hierarchy
+        view.addSubview(shadowView)
+        shadowView.addSubview(bottomControlStack)
         
-        bottomControlWidthConstraint = bottomControl.widthAnchor.constraint(equalToConstant: bottomControl.preferredWidth)
+        // Width constraint depends on current mode
+        bottomControlWidthConstraint =
+        bottomControl.widthAnchor.constraint(equalToConstant: bottomControl.preferredWidth)
         
         let w: CGFloat = 12.scaled
         let h: CGFloat = 30.scaled
         let height: CGFloat = 58.scaled
+        
+        // Shadow container positioning
         NSLayoutConstraint.activate([
-            bottomControlStack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor, constant: w),
-            bottomControlStack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -w),
-            bottomControlStack.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -h),
+            shadowView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor, constant: w),
+            shadowView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor, constant: -w),
+            shadowView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -h),
+        ])
+        
+        // Stack fills shadow container
+        NSLayoutConstraint.activate([
+            bottomControlStack.leadingAnchor.constraint(equalTo: shadowView.leadingAnchor),
+            bottomControlStack.trailingAnchor.constraint(equalTo: shadowView.trailingAnchor),
+            bottomControlStack.topAnchor.constraint(equalTo: shadowView.topAnchor),
+            bottomControlStack.bottomAnchor.constraint(equalTo: shadowView.bottomAnchor),
             
             bottomControlWidthConstraint,
-            bottomControl.heightAnchor.constraint(equalToConstant: height) //
+            bottomControl.heightAnchor.constraint(equalToConstant: height)
         ])
     }
 }
@@ -982,9 +1015,9 @@ extension CountryViewController {
         }
         
         UIView.transition(with: navigationBar, duration: 0.25, options: [.transitionCrossDissolve], animations: {
-                self.title = text
-            },
-            completion: nil
+            self.title = text
+        },
+                          completion: nil
         )
     }
 }

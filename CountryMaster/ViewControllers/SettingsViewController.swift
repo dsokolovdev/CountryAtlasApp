@@ -82,8 +82,9 @@ extension SettingsViewController {
         
         // MARK: - Accessory Button (Mask Mode Selector)
         let button = UIButton(type: .system)
+        let size: CGFloat = max(15, 16.scaled)
         button.setTitle(model.maskMode.title, for: .normal)
-        button.titleLabel?.font = .rounded(ofSize: 16.scaled, weight: .medium)
+        button.titleLabel?.font = .rounded(ofSize: size, weight: .medium)
         
         // Build menu from all MaskMode cases
         button.menu = UIMenu(
@@ -136,7 +137,7 @@ extension SettingsViewController {
     
     /// Attaches footer displaying app version/build info.
     private func configureFooter() {
-        let size: CGFloat = max(12.scaled, 13.scaled)
+        let size: CGFloat = max(13, 13.scaled)
         
         let footerLabel = UILabel()
         footerLabel.text = Settings.settingsFooterText

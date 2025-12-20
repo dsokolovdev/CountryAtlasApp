@@ -13,7 +13,7 @@
 import UIKit
 
 // MARK: - BottomControlBar
-final class BottomControlBar: UIView {
+final class BottomControlBar: UIVisualEffectView {
     
     // MARK: - Mode
     /// Defines which segmented control is visible.
@@ -144,8 +144,8 @@ final class BottomControlBar: UIView {
     }()
     
     // MARK: - Init
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init() {
+        super.init(effect: UIBlurEffect(style: .systemUltraThinMaterial))
         setup()
         updateMode()
         
@@ -157,6 +157,7 @@ final class BottomControlBar: UIView {
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        effect = UIBlurEffect(style: .systemUltraThinMaterial)
         setup()
         updateMode()
     }
@@ -164,19 +165,32 @@ final class BottomControlBar: UIView {
     // MARK: - Setup
     /// Performs initial view setup and constraints.
     private func setup() {
+        if #available(iOS 26.0, *) {
+            let glassEffect = UIGlassEffect(style: .clear)
+            let visualEffectView = UIVisualEffectView(effect: glassEffect)
+            visualEffectView.translatesAutoresizingMaskIntoConstraints = false
+            contentView.insertSubview(visualEffectView, at: 0)
+            
+            NSLayoutConstraint.activate([
+                visualEffectView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+                visualEffectView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+                visualEffectView.topAnchor.constraint(equalTo: contentView.topAnchor),
+                visualEffectView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            ])
+        } else {
+            // Fallback on earlier versions
+        }
+        
         translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = .systemBackground.withAlphaComponent(0.2)
+        
         layer.cornerRadius = 29.scaled
+        layer.masksToBounds = true
         
-        layer.shadowColor = UIColor.label.cgColor
-        layer.shadowOpacity = 0.1
-        layer.shadowOffset = CGSize(width: 0, height: 2.5)
-        layer.shadowRadius = 4
-        layer.masksToBounds = false
+        contentView.layer.cornerRadius = 29.scaled
+        contentView.layer.masksToBounds = true
         
-        // Add both segmented controls
-        addSubview(learningSegment)
-        addSubview(testingSegment)
+        contentView.addSubview(learningSegment)
+        contentView.addSubview(testingSegment)
         
         let c: CGFloat = 2.scaled
         NSLayoutConstraint.activate([
