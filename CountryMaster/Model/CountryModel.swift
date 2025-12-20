@@ -17,398 +17,418 @@ import UIKit
 // MARK: - AtlasModel
 
 final class CountryModel {
-
-// MARK: - Configuration & State
-
-/// Current testing aspect (capital / country / flag)
-var testingAspect: TestingAspect = .capital
-
-/// Current study configuration (mode + selected region)
-var currentConfig = StudyConfiguration(mode: .learning, region: .world)
-
-/// Full world data model
-var world: World?
-
-/// Selected filter segment index
-var filterMode: Int = 0
-
-/// Indicates whether learning progress exists
-var startedLearning: Bool = false
-
-/// Indicates whether testing progress exists
-var startedTesting: Bool = false
-
-/// Callback fired when world data changes
-var onWorldUpdated: (() -> Void)?
-
-// MARK: - Dependencies
-
-private let service = CountryService()
-private let dataStore = DataStore()
-
-/// Current search query
-private var searchQuery: String?
-
-// MARK: - World Filtering
-
-/// Returns a filtered copy of the world according to
-/// region, study mode, filter segment and search query
-func filteredWorld() -> World {
-    guard let world = world else { return World() }
-
-    let selectedRegion = currentConfig.region
-    let currentStudyMode = currentConfig.mode
-
-    let sortedContinents = world.continents.sorted {
-        $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+    
+    // MARK: - Configuration & State
+    
+    /// Current testing aspect (capital / country / flag)
+    var testingAspect: TestingAspect = .capital
+    
+    /// Current study configuration (mode + selected region)
+    var currentConfig = StudyConfiguration(mode: .learning, region: .world)
+    
+    /// Full world data model
+    var world: World?
+    
+    /// Selected filter segment index
+    var filterMode: Int = 0
+    
+    /// Indicates whether learning progress exists
+    var startedLearning: Bool = false
+    
+    /// Indicates whether testing progress exists
+    var startedTesting: Bool = false
+    
+    /// Indicates current mask mode 
+    var maskMode: MaskMode = .normal
+    
+    /// Callback fired when world data changes
+    var onWorldUpdated: (() -> Void)?
+    
+    // MARK: - Dependencies
+    
+    private let service = CountryService()
+    private let dataStore = DataStore()
+    
+    /// Current search query
+    private var searchQuery: String?
+    
+    
+    init() {
+        loadMaskModeConfig()
+        loadUserConfiguration()
+        loadEntireWorlddData()
     }
-
-    let filteredContinents = sortedContinents.compactMap { continent -> Continent? in
-
-        // MARK: Region filter
-        switch selectedRegion {
-        case .world: break
-        case .continent(let name):
-            if continent.name != name { return nil }
-        }
-
-        // MARK: Country filter
-        let filteredCountries = continent.countries.filter { country in
-
-            // Search filter
-            guard matchesSearch(continent: continent.name, country: country) else { return false }
-
-            if currentStudyMode == .learning {
-                switch filterMode {
-                case 0: return !country.isLearned // To learn
-                case 1: return country.isLearned  // Learned
-                case 2: return true               // Statistics
-                default: return true
-                }
-            } else {
-                // Exclude countries without capital for "country" testing
-                if testingAspect == .country && country.capital == "No capital" {
-                    return false
-                }
-                switch filterMode {
-                case 0: return (country.testResults[testingAspect] ?? .notTested) == .notTested // Test
-                case 1: return (country.testResults[testingAspect] ?? .notTested) == .failed    // Review
-                case 2: return (country.testResults[testingAspect] ?? .notTested) == .passed    // Passed
-                case 3: return true                                                           // Statistics
-                default: return true
-                }
-            }
-        }
-        .sorted {
+    
+    // MARK: - World Filtering
+    
+    /// Returns a filtered copy of the world according to
+    /// region, study mode, filter segment and search query
+    func filteredWorld() -> World {
+        guard let world = world else { return World() }
+        
+        let selectedRegion = currentConfig.region
+        let currentStudyMode = currentConfig.mode
+        
+        let sortedContinents = world.continents.sorted {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
-
-        // MARK: Shuffle logic (testing only)
-        let finalCountries: [Country]
-        if currentStudyMode == .testing && filterMode == 0 {
-            finalCountries = filteredCountries.shuffled()
-        } else {
-            finalCountries = filteredCountries
+        
+        let filteredContinents = sortedContinents.compactMap { continent -> Continent? in
+            
+            // MARK: Region filter
+            switch selectedRegion {
+            case .world: break
+            case .continent(let name):
+                if continent.name != name { return nil }
+            }
+            
+            // MARK: Country filter
+            let filteredCountries = continent.countries.filter { country in
+                
+                // Search filter
+                guard matchesSearch(continent: continent.name, country: country) else { return false }
+                
+                if currentStudyMode == .learning {
+                    switch filterMode {
+                    case 0: return !country.isLearned // To learn
+                    case 1: return country.isLearned  // Learned
+                    case 2: return true               // Statistics
+                    default: return true
+                    }
+                } else {
+                    // Exclude countries without capital for "country" testing
+                    if testingAspect == .country && country.capital == "No capital" {
+                        return false
+                    }
+                    switch filterMode {
+                    case 0: return (country.testResults[testingAspect] ?? .notTested) == .notTested // Test
+                    case 1: return (country.testResults[testingAspect] ?? .notTested) == .failed    // Review
+                    case 2: return (country.testResults[testingAspect] ?? .notTested) == .passed    // Passed
+                    case 3: return true                                                           // Statistics
+                    default: return true
+                    }
+                }
+            }
+                .sorted {
+                    $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+            
+            // MARK: Shuffle logic (testing only)
+            let finalCountries: [Country]
+            if currentStudyMode == .testing && filterMode == 0 {
+                finalCountries = filteredCountries.shuffled()
+            } else {
+                finalCountries = filteredCountries
+            }
+            
+            // Hide empty continents
+            if (filterMode == 1 || filterMode == 2) && filteredCountries.isEmpty {
+                return nil
+            }
+            
+            return Continent(name: continent.name, countries: finalCountries)
         }
-
-        // Hide empty continents
-        if (filterMode == 1 || filterMode == 2) && filteredCountries.isEmpty {
-            return nil
-        }
-
-        return Continent(name: continent.name, countries: finalCountries)
+        
+        return World(continents: filteredContinents)
     }
-
-    return World(continents: filteredContinents)
-}
-
-// MARK: - Learning Statistics
-
-/// Returns learning statistics for World and all continents
-func getStatistics() -> [ContinentStats] {
-    guard let world = world else { return [] }
-
-    // MARK: World statistics
-    let worldTotals = world.continents
-        .flatMap { $0.countries }
-        .reduce((total: 0, learned: 0)) { acc, country in
-            (total: acc.total + 1, learned: acc.learned + (country.isLearned ? 1 : 0))
-        }
-
-    let learnedRatio = worldTotals.total == 0
+    
+    // MARK: - Learning Statistics
+    
+    /// Returns learning statistics for World and all continents
+    func getStatistics() -> [ContinentStats] {
+        guard let world = world else { return [] }
+        
+        // MARK: World statistics
+        let worldTotals = world.continents
+            .flatMap { $0.countries }
+            .reduce((total: 0, learned: 0)) { acc, country in
+                (total: acc.total + 1, learned: acc.learned + (country.isLearned ? 1 : 0))
+            }
+        
+        let learnedRatio = worldTotals.total == 0
         ? 0
         : Double(worldTotals.learned) / Double(worldTotals.total)
-
-    let worldStats = ContinentStats(
-        name: "World",
-        total: worldTotals.total,
-        learned: worldTotals.learned,
-        toLearn: worldTotals.total - worldTotals.learned,
-        learnedProgress: learnedRatio,
-        toLearnProgress: 1 - learnedRatio
-    )
-
-    // MARK: Continent statistics
-    let continentsForStats = world.continents.filter {
-        matchesContinentStats(name: $0.name)
-    }
-
-    let continentStats = continentsForStats.map { c in
-        let total = c.countries.count
-        let learned = c.countries.filter { $0.isLearned }.count
-        let toLearn = total - learned
-        let learnedRatio = total == 0 ? 0 : Double(learned) / Double(total)
-
-        return ContinentStats(
-            name: c.name,
-            total: total,
-            learned: learned,
-            toLearn: toLearn,
+        
+        let worldStats = ContinentStats(
+            name: "World",
+            total: worldTotals.total,
+            learned: worldTotals.learned,
+            toLearn: worldTotals.total - worldTotals.learned,
             learnedProgress: learnedRatio,
             toLearnProgress: 1 - learnedRatio
         )
-    }
-
-    let sortedContinents = continentStats.sorted {
-        if $0.learnedProgress != $1.learnedProgress {
-            return $0.learnedProgress > $1.learnedProgress
-        } else {
-            return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        
+        // MARK: Continent statistics
+        let continentsForStats = world.continents.filter {
+            matchesContinentStats(name: $0.name)
         }
+        
+        let continentStats = continentsForStats.map { c in
+            let total = c.countries.count
+            let learned = c.countries.filter { $0.isLearned }.count
+            let toLearn = total - learned
+            let learnedRatio = total == 0 ? 0 : Double(learned) / Double(total)
+            
+            return ContinentStats(
+                name: c.name,
+                total: total,
+                learned: learned,
+                toLearn: toLearn,
+                learnedProgress: learnedRatio,
+                toLearnProgress: 1 - learnedRatio
+            )
+        }
+        
+        let sortedContinents = continentStats.sorted {
+            if $0.learnedProgress != $1.learnedProgress {
+                return $0.learnedProgress > $1.learnedProgress
+            } else {
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+        }
+        
+        return [worldStats] + sortedContinents
     }
-
-    return [worldStats] + sortedContinents
-}
-
-// MARK: - Testing Statistics
-
-/// Returns testing statistics for World and continents
-func getTestStatistics() -> [ContinentTestStats] {
-    guard let world else { return [] }
-
-    let aspect = testingAspect
-
-    // Continents filtered by search
-    let continentsForStats = world.continents.filter {
-        matchesContinentStats(name: $0.name)
-    }
-
-    // MARK: World statistics (not affected by search)
-    let allWorldCountries = world.continents.flatMap { $0.countries }
-
-    let worldPassed = allWorldCountries.filter { $0.testResults[aspect] == .passed }.count
-    let worldFailed = allWorldCountries.filter { $0.testResults[aspect] == .failed }.count
-    let worldUntested = allWorldCountries.filter {
-        ($0.testResults[aspect] ?? .notTested) == .notTested
-    }.count
-
-    let worldTotal = allWorldCountries.count
-    let worldFinished = worldPassed + worldFailed
-
-    let worldStats = ContinentTestStats(
-        name: "World",
-        total: worldTotal,
-        passed: worldPassed,
-        failed: worldFailed,
-        untested: worldUntested,
-        finishedRatio: worldTotal > 0 ? Double(worldFinished) / Double(worldTotal) : 0,
-        passedRatio: worldFinished > 0 ? Double(worldPassed) / Double(worldFinished) : 0,
-        failedRatio: worldFinished > 0 ? Double(worldFailed) / Double(worldFinished) : 0
-    )
-
-    // MARK: Continent statistics
-    let continentStats = continentsForStats.map { continent in
-        let countries = continent.countries
-
-        let passed = countries.filter { $0.testResults[aspect] == .passed }.count
-        let failed = countries.filter { $0.testResults[aspect] == .failed }.count
-        let untested = countries.filter {
+    
+    // MARK: - Testing Statistics
+    
+    /// Returns testing statistics for World and continents
+    func getTestStatistics() -> [ContinentTestStats] {
+        guard let world else { return [] }
+        
+        let aspect = testingAspect
+        
+        // Continents filtered by search
+        let continentsForStats = world.continents.filter {
+            matchesContinentStats(name: $0.name)
+        }
+        
+        // MARK: World statistics (not affected by search)
+        let allWorldCountries = world.continents.flatMap { $0.countries }
+        
+        let worldPassed = allWorldCountries.filter { $0.testResults[aspect] == .passed }.count
+        let worldFailed = allWorldCountries.filter { $0.testResults[aspect] == .failed }.count
+        let worldUntested = allWorldCountries.filter {
             ($0.testResults[aspect] ?? .notTested) == .notTested
         }.count
-
-        let total = countries.count
-        let finished = passed + failed
-
-        return ContinentTestStats(
-            name: continent.name,
-            total: total,
-            passed: passed,
-            failed: failed,
-            untested: untested,
-            finishedRatio: total > 0 ? Double(finished) / Double(total) : 0,
-            passedRatio: finished > 0 ? Double(passed) / Double(finished) : 0,
-            failedRatio: finished > 0 ? Double(failed) / Double(finished) : 0
+        
+        let worldTotal = allWorldCountries.count
+        let worldFinished = worldPassed + worldFailed
+        
+        let worldStats = ContinentTestStats(
+            name: "World",
+            total: worldTotal,
+            passed: worldPassed,
+            failed: worldFailed,
+            untested: worldUntested,
+            finishedRatio: worldTotal > 0 ? Double(worldFinished) / Double(worldTotal) : 0,
+            passedRatio: worldFinished > 0 ? Double(worldPassed) / Double(worldFinished) : 0,
+            failedRatio: worldFinished > 0 ? Double(worldFailed) / Double(worldFinished) : 0
         )
-    }
-
-    // Sort by completion, then by name
-    let sortedContinents = continentStats.sorted {
-        if $0.finishedRatio != $1.finishedRatio {
-            return $0.finishedRatio > $1.finishedRatio
-        } else {
-            return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        
+        // MARK: Continent statistics
+        let continentStats = continentsForStats.map { continent in
+            let countries = continent.countries
+            
+            let passed = countries.filter { $0.testResults[aspect] == .passed }.count
+            let failed = countries.filter { $0.testResults[aspect] == .failed }.count
+            let untested = countries.filter {
+                ($0.testResults[aspect] ?? .notTested) == .notTested
+            }.count
+            
+            let total = countries.count
+            let finished = passed + failed
+            
+            return ContinentTestStats(
+                name: continent.name,
+                total: total,
+                passed: passed,
+                failed: failed,
+                untested: untested,
+                finishedRatio: total > 0 ? Double(finished) / Double(total) : 0,
+                passedRatio: finished > 0 ? Double(passed) / Double(finished) : 0,
+                failedRatio: finished > 0 ? Double(failed) / Double(finished) : 0
+            )
         }
-    }
-
-    return [worldStats] + sortedContinents
-}
-
-// MARK: - Progress State Updates
-
-/// Updates flag indicating whether learning has started
-private func updateStartedLearningFlag() {
-    guard let world else {
-        startedLearning = false
-        return
-    }
-
-    startedLearning = world.continents
-        .flatMap { $0.countries }
-        .contains { $0.isLearned }
-}
-
-/// Updates flag indicating whether testing has started
-private func updateStartedTestingFlags() {
-    guard let world else {
-        startedTesting = false
-        return
-    }
-
-    startedTesting = world.continents
-        .flatMap { $0.countries }
-        .contains { ($0.testResults[testingAspect] ?? .notTested) != .notTested }
-}
-
-// MARK: - Reset Actions
-
-/// Resets all testing results for the current testing aspect
-func resetTestingProgress() {
-    world?.continents.indices.forEach { cIndex in
-        world?.continents[cIndex].countries.indices.forEach { countryIndex in
-            world?.continents[cIndex].countries[countryIndex].testResults[testingAspect] = .notTested
+        
+        // Sort by completion, then by name
+        let sortedContinents = continentStats.sorted {
+            if $0.finishedRatio != $1.finishedRatio {
+                return $0.finishedRatio > $1.finishedRatio
+            } else {
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
         }
+        
+        return [worldStats] + sortedContinents
     }
-
-    updateStartedTestingFlags()
-
-    if let world {
-        dataStore.saveWorldData(world)
-    }
-
-    onWorldUpdated?()
-}
-
-/// Resets all learning progress
-func resetLearningProgress() {
-    world?.continents.indices.forEach { cIndex in
-        world?.continents[cIndex].countries.indices.forEach { countryIndex in
-            world?.continents[cIndex].countries[countryIndex].isLearned = false
+    
+    // MARK: - Progress State Updates
+    
+    /// Updates flag indicating whether learning has started
+    private func updateStartedLearningFlag() {
+        guard let world else {
+            startedLearning = false
+            return
         }
+        
+        startedLearning = world.continents
+            .flatMap { $0.countries }
+            .contains { $0.isLearned }
     }
-
-    updateStartedLearningFlag()
-
-    if let world {
-        dataStore.saveWorldData(world)
+    
+    /// Updates flag indicating whether testing has started
+    private func updateStartedTestingFlags() {
+        guard let world else {
+            startedTesting = false
+            return
+        }
+        
+        startedTesting = world.continents
+            .flatMap { $0.countries }
+            .contains { ($0.testResults[testingAspect] ?? .notTested) != .notTested }
     }
-
-    onWorldUpdated?()
-}
-
-// MARK: - Configuration Updates
-
-/// Sets active testing aspect
-func setTestingAspect(_ aspect: TestingAspect) {
-    testingAspect = aspect
-    updateStartedTestingFlags()
-}
-
-/// Updates selected filter segment
-func updateFilterMode(_ mode: Int) {
-    self.filterMode = mode
-}
-
-/// Updates world continents after external modification
-func updateWorldContinents(_ continents: [Continent]) {
-    world?.continents = continents
-}
-
-// MARK: - Swipe Actions
-
-/// Toggles learned state for a country at indexPath
-func markCountryAsLearned(at indexPath: IndexPath) {
-    let currentContinent = filteredWorld().continents[indexPath.section]
-    let tappedCountry = currentContinent.countries[indexPath.item]
-
-    guard
-        let continentIndex = world?.continents.firstIndex(where: { $0 == currentContinent }),
-        let countryIndex = world?.continents[continentIndex].countries.firstIndex(where: { $0 == tappedCountry })
-    else { return }
-
-    world?.continents[continentIndex].countries[countryIndex].isLearned.toggle()
-    updateStartedLearningFlag()
-
-    if let world {
-        dataStore.saveWorldData(world)
-    }
-}
-
-// MARK: - Helpers
-
-/// Returns total number of countries for a section
-func getTotal(for indexPath: IndexPath) -> Int {
-    let currentContinent = filteredWorld().continents[indexPath.section]
-    guard
-        let world = world,
-        let continentIndex = world.continents.firstIndex(where: { $0 == currentContinent })
-    else { return 0 }
-
-    return world.continents[continentIndex].countries.count
-}
-
-/// Returns current number of visible countries for a section
-func getCurrentCount(for indexPath: IndexPath) -> Int {
-    filteredWorld().continents[indexPath.section].countries.count
-}
-
-// MARK: - Persistence
-
-/// Loads saved user configuration
-func loadUserConfiguration() {
-    if let savedConfig = dataStore.loadUserConfig() {
-        currentConfig = savedConfig
-    }
-}
-
-/// Loads world data from storage or API
-func loadEntireWorlddData() {
-    if let savedWorld = dataStore.loadWorldData() {
-        world = savedWorld
-        updateStartedLearningFlag()
+    
+    // MARK: - Reset Actions
+    
+    /// Resets all testing results for the current testing aspect
+    func resetTestingProgress() {
+        world?.continents.indices.forEach { cIndex in
+            world?.continents[cIndex].countries.indices.forEach { countryIndex in
+                world?.continents[cIndex].countries[countryIndex].testResults[testingAspect] = .notTested
+            }
+        }
+        
         updateStartedTestingFlags()
-    } else {
-        loadCountriesFromAPI()
+        
+        if let world {
+            dataStore.saveWorldData(world)
+        }
+        
+        onWorldUpdated?()
     }
-}
-
-/// Saves user configuration
-func saveUserConfiguratin(_ config: StudyConfiguration) {
-    dataStore.saveUserConfig(config)
-}
-
-/// Loads countries from API and builds world model
-func loadCountriesFromAPI() {
-    service.fetchAllCountries { apiCountries in
-        let world = self.service.buildAtlas(from: apiCountries)
-
-        DispatchQueue.main.async {
-            self.world = world
-            self.dataStore.saveWorldData(world)
-            self.onWorldUpdated?()
+    
+    /// Resets all learning progress
+    func resetLearningProgress() {
+        world?.continents.indices.forEach { cIndex in
+            world?.continents[cIndex].countries.indices.forEach { countryIndex in
+                world?.continents[cIndex].countries[countryIndex].isLearned = false
+            }
+        }
+        
+        updateStartedLearningFlag()
+        
+        if let world {
+            dataStore.saveWorldData(world)
+        }
+        
+        onWorldUpdated?()
+    }
+    
+    // MARK: - Configuration Updates
+    
+    /// Sets active testing aspect
+    func setTestingAspect(_ aspect: TestingAspect) {
+        testingAspect = aspect
+        updateStartedTestingFlags()
+    }
+    
+    /// Updates selected filter segment
+    func updateFilterMode(_ mode: Int) {
+        self.filterMode = mode
+    }
+    
+    /// Updates world continents after external modification
+    func updateWorldContinents(_ continents: [Continent]) {
+        world?.continents = continents
+    }
+    
+    // MARK: - Swipe Actions
+    
+    /// Toggles learned state for a country at indexPath
+    func markCountryAsLearned(at indexPath: IndexPath) {
+        let currentContinent = filteredWorld().continents[indexPath.section]
+        let tappedCountry = currentContinent.countries[indexPath.item]
+        
+        guard
+            let continentIndex = world?.continents.firstIndex(where: { $0 == currentContinent }),
+            let countryIndex = world?.continents[continentIndex].countries.firstIndex(where: { $0 == tappedCountry })
+        else { return }
+        
+        world?.continents[continentIndex].countries[countryIndex].isLearned.toggle()
+        updateStartedLearningFlag()
+        
+        if let world {
+            dataStore.saveWorldData(world)
         }
     }
-}
-
+    
+    // MARK: - Helpers
+    
+    /// Returns total number of countries for a section
+    func getTotal(for indexPath: IndexPath) -> Int {
+        let currentContinent = filteredWorld().continents[indexPath.section]
+        guard
+            let world = world,
+            let continentIndex = world.continents.firstIndex(where: { $0 == currentContinent })
+        else { return 0 }
+        
+        return world.continents[continentIndex].countries.count
+    }
+    
+    /// Returns current number of visible countries for a section
+    func getCurrentCount(for indexPath: IndexPath) -> Int {
+        filteredWorld().continents[indexPath.section].countries.count
+    }
+    
+    // MARK: - Persistence
+    /// Save mask mode config
+    func saveMaskModeConfig(maskMode: MaskMode) {
+        dataStore.saveMaskMode(modeValue: maskMode)
+    }
+    
+    /// Load mask mode config
+    private func loadMaskModeConfig() {
+       if let maskMode =  dataStore.loadMaskMode() {
+           self.maskMode = MaskMode(rawValue: maskMode) ?? .normal
+        }
+    }
+    /// Loads saved user configuration
+    private func loadUserConfiguration() {
+        if let savedConfig = dataStore.loadUserConfig() {
+            currentConfig = savedConfig
+        }
+    }
+    
+    /// Loads world data from storage or API
+    private func loadEntireWorlddData() {
+        if let savedWorld = dataStore.loadWorldData() {
+            world = savedWorld
+            updateStartedLearningFlag()
+            updateStartedTestingFlags()
+        } else {
+            loadCountriesFromAPI()
+        }
+    }
+    
+    /// Saves user configuration
+    func saveUserConfiguratin(_ config: StudyConfiguration) {
+        dataStore.saveUserConfig(config)
+    }
+    
+    /// Loads countries from API and builds world model
+    func loadCountriesFromAPI() {
+        service.fetchAllCountries { apiCountries in
+            let world = self.service.buildAtlas(from: apiCountries)
+            
+            DispatchQueue.main.async {
+                self.world = world
+                self.dataStore.saveWorldData(world)
+                self.onWorldUpdated?()
+            }
+        }
+    }
+    
 }
 
 // MARK: - Test Question Generation

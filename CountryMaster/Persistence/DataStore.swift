@@ -23,6 +23,18 @@ final class DataStore {
 
     /// Key for saving StudyConfiguration in UserDefaults
     private let configKey = "studyConfig"
+    private let maskMode = "maskMode"
+    
+    // MARK:  - SettingConfiguratin Persistence (UserDefaults)
+    ///Save curren mask mode configuration
+    func saveMaskMode(modeValue: MaskMode) {
+        UserDefaults.standard.set(modeValue.rawValue, forKey: maskMode)
+    }
+    
+    ///Load mask mode configuration
+    func loadMaskMode() -> String? {
+        UserDefaults.standard.string(forKey: maskMode)
+    }
 
     // MARK: - StudyConfiguration Persistence (UserDefaults)
 

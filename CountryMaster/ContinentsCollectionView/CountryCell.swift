@@ -10,7 +10,9 @@ import UIKit
 /// UICollectionViewCell that displays country information:
 /// flag, country name, capital, and supports masking in testing mode.
 final class CountryCell: UICollectionViewCell {
-
+    
+    //var maskMode: MaskMode = .normal
+    
     // MARK: - Reuse Identifier
     static let reusedId = "CountryCell"
 
@@ -101,12 +103,7 @@ final class CountryCell: UICollectionViewCell {
     ///   - testingAspect: Current testing aspect (country / capital / flag)
     ///   - isTestingMode: Indicates whether testing mode is active
     ///   - currentSegment: Selected testing segment (0 = masked)
-    func configure(
-        country: Country,
-        testingAspect: TestingAspect,
-        isTestingMode: Bool,
-        currentSegment: Int
-    ) {
+    func configure(country: Country, testingAspect: TestingAspect, isTestingMode: Bool, currentSegment: Int, maskMode: MaskMode) {
 
         let countryName = country.name
         let capital = country.capital
@@ -119,10 +116,10 @@ final class CountryCell: UICollectionViewCell {
 
         // Masked values for testing mode
         let displayedCountry =
-            currentSegment == 0 ? maskString(originalString: countryName) : countryName
+        currentSegment == 0 ? mask(countryName, mode: maskMode) : countryName
 
         let displayedCapital =
-            currentSegment == 0 ? maskString(originalString: capital) : capital
+            currentSegment == 0 ? mask(capital, mode: maskMode) : capital
 
         let displayedFlag =
             currentSegment == 0 ? "🏳️" : flag
@@ -143,6 +140,19 @@ final class CountryCell: UICollectionViewCell {
 
 // MARK: - Masking Helpers
 extension CountryCell {
+    
+    func mask(_ text: String, mode: MaskMode) -> String {
+        switch mode {
+        case .lite:
+            return shuffledString(from: text)
+
+        case .normal:
+            return maskString(originalString: text)
+
+        case .hard:
+            return String(repeating: "・", count: 4)
+        }
+    }
 
     /// Replaces each word in a string with asterisks, preserving word lengths.
     /// Example: "New York" → "*** ****"
@@ -160,5 +170,15 @@ extension CountryCell {
         }
 
         return newString
+    }
+    
+    func shuffledString(from text: String) -> String {
+        guard text.count > 1 else { return text }
+
+        var result = text
+        while result == text {
+            result = String(text.shuffled())
+        }
+        return result
     }
 }

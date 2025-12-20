@@ -27,7 +27,7 @@ final class CountryViewController: UIViewController, UICollectionViewDelegate {
 
     // MARK: - Dependencies
     /// Core model responsible for world data, user configuration, filtering and progress.
-    private let atlasModel: CountryModel
+    private let countryModel: CountryModel
 
     // MARK: - Haptics
     /// Light impact feedback used on destructive actions (e.g. reset).
@@ -86,7 +86,7 @@ final class CountryViewController: UIViewController, UICollectionViewDelegate {
 
     // MARK: - Init
     init(model: CountryModel) {
-        self.atlasModel = model
+        self.countryModel = model
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -100,11 +100,6 @@ final class CountryViewController: UIViewController, UICollectionViewDelegate {
         navigationController?.isToolbarHidden = true
         configureNavigationTitle()
 
-
-        //Load saved studyConfigs: region, mode
-        atlasModel.loadUserConfiguration()
-        atlasModel.loadEntireWorlddData()
-
         setupnavigationBar()
         setupRightButtonItems()
         setupCollectionView()
@@ -115,7 +110,7 @@ final class CountryViewController: UIViewController, UICollectionViewDelegate {
         applyLayoutForCurrentMode()
 
         // Model → UI binding: refresh snapshot whenever world changes.
-        atlasModel.onWorldUpdated = { [weak self] in
+        countryModel.onWorldUpdated = { [weak self] in
             DispatchQueue.main.async {
                 self?.reloadSnapshot()
             }
@@ -184,7 +179,7 @@ extension CountryViewController {
         modeButton = UIBarButtonItem(image: UIImage(systemName: "book.fill"), style: .plain, target: self, action: #selector(modeButtonTapped))
 
         // Test aspect menu is attached to the bar button item.
-        testAspectButton = UIBarButtonItem(image: UIImage(systemName: atlasModel.testingAspect.iconName), menu: makeMenu())
+        testAspectButton = UIBarButtonItem(image: UIImage(systemName: countryModel.testingAspect.iconName), menu: makeMenu())
 
         navigationItem.leftBarButtonItems = [settingsButton, space, resetButton]
         navigationItem.rightBarButtonItems = [ modeButton]
@@ -197,7 +192,7 @@ extension CountryViewController {
     /// - learning: only modeButton
     /// - testing: modeButton + testAspectButton
     func setupRightButtonItems() {
-        let rightItems: [UIBarButtonItem] = atlasModel.currentConfig.mode ==  .learning ? [ modeButton] : [modeButton, testAspectButton]
+        let rightItems: [UIBarButtonItem] = countryModel.currentConfig.mode ==  .learning ? [ modeButton] : [modeButton, testAspectButton]
         navigationItem.rightBarButtonItems = rightItems
     }
 
@@ -209,16 +204,16 @@ extension CountryViewController {
         let inactiveColor = AppColors.greyblue.withAlphaComponent(0.7)
 
         // Use paletteColors to tint different menu icons depending on current selection.
-        let capitalImage = UIImage(systemName: "building.2.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [atlasModel.testingAspect == .capital ? activeColor : inactiveColor]))
-        let countryImage = UIImage(systemName: "globe.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [atlasModel.testingAspect == .country ? activeColor : inactiveColor]))
-        let flagImage = UIImage(systemName: "flag.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [atlasModel.testingAspect == .flag ? activeColor : inactiveColor]))
+        let capitalImage = UIImage(systemName: "building.2.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [countryModel.testingAspect == .capital ? activeColor : inactiveColor]))
+        let countryImage = UIImage(systemName: "globe.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [countryModel.testingAspect == .country ? activeColor : inactiveColor]))
+        let flagImage = UIImage(systemName: "flag.fill", withConfiguration: UIImage.SymbolConfiguration(paletteColors: [countryModel.testingAspect == .flag ? activeColor : inactiveColor]))
 
 
-        let capitalAction = UIAction(title: "Capitals", image: capitalImage, state: atlasModel.testingAspect == .capital ? .on : .off) { [weak self] _ in
+        let capitalAction = UIAction(title: "Capitals", image: capitalImage, state: countryModel.testingAspect == .capital ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             //self.atlasModel.testingAspect = .capital
-            self.atlasModel.setTestingAspect(.capital)
-            self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
+            self.countryModel.setTestingAspect(.capital)
+            self.testAspectButton.image = UIImage(systemName: countryModel.testingAspect.iconName)
             self.testAspectButton.menu = self.makeMenu()
             UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
                 self.reloadSnapshot()
@@ -226,22 +221,22 @@ extension CountryViewController {
             self.setResetButtonState()
         }
 
-        let countryAction = UIAction(title: "Countries", image: countryImage, state: atlasModel.testingAspect == .country ? .on : .off) { [weak self] _ in
+        let countryAction = UIAction(title: "Countries", image: countryImage, state: countryModel.testingAspect == .country ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             //self.atlasModel.testingAspect = .country
-            self.atlasModel.setTestingAspect(.country)
-            self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
+            self.countryModel.setTestingAspect(.country)
+            self.testAspectButton.image = UIImage(systemName: countryModel.testingAspect.iconName)
             self.testAspectButton.menu = self.makeMenu()
             UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
                 self.reloadSnapshot()
             })
             self.setResetButtonState()
         }
-        let flagAction = UIAction(title: "Flags", image: flagImage, state: atlasModel.testingAspect == .flag ? .on : .off) { [weak self] _ in
+        let flagAction = UIAction(title: "Flags", image: flagImage, state: countryModel.testingAspect == .flag ? .on : .off) { [weak self] _ in
             guard let self = self else { return }
             //self.atlasModel.testingAspect = .flag
-            self.atlasModel.setTestingAspect(.flag)
-            self.testAspectButton.image = UIImage(systemName: atlasModel.testingAspect.iconName)
+            self.countryModel.setTestingAspect(.flag)
+            self.testAspectButton.image = UIImage(systemName: countryModel.testingAspect.iconName)
             self.testAspectButton.menu = self.makeMenu()
             UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
                 self.reloadSnapshot()
@@ -254,9 +249,9 @@ extension CountryViewController {
             NSAttributedString(string: text, attributes: [.foregroundColor: isActive ? activeColor : inactiveColor])
         }
 
-        capitalAction.setValue(attributedTitle("Capitals", isActive: atlasModel.testingAspect == .capital), forKey: "attributedTitle")
-        countryAction.setValue(attributedTitle("Countries", isActive: atlasModel.testingAspect == .country), forKey: "attributedTitle")
-        flagAction.setValue(attributedTitle("Flags", isActive: atlasModel.testingAspect == .flag), forKey: "attributedTitle")
+        capitalAction.setValue(attributedTitle("Capitals", isActive: countryModel.testingAspect == .capital), forKey: "attributedTitle")
+        countryAction.setValue(attributedTitle("Countries", isActive: countryModel.testingAspect == .country), forKey: "attributedTitle")
+        flagAction.setValue(attributedTitle("Flags", isActive: countryModel.testingAspect == .flag), forKey: "attributedTitle")
 
         return UIMenu(title: "Testing Items", children: [capitalAction, countryAction, flagAction])
     }
@@ -278,12 +273,12 @@ extension CountryViewController {
             guard let self = self else { return nil }
 
 //            guard self.atlasModel.currentConfig.mode == .learning else { return nil }
-            guard self.atlasModel.filterMode == 0 && self.atlasModel.currentConfig.mode == .learning else { return nil }
+            guard self.countryModel.filterMode == 0 && self.countryModel.currentConfig.mode == .learning else { return nil }
 
             // Right Green Swap Button (Learned)
             let learnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
                
-                self.atlasModel.markCountryAsLearned(at: indexPath)
+                self.countryModel.markCountryAsLearned(at: indexPath)
                 UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
                     self.reloadSnapshot()
                 })
@@ -305,12 +300,12 @@ extension CountryViewController {
         config.leadingSwipeActionsConfigurationProvider = { [weak self] indexPath in
             guard let self = self else { return nil }
 
-            guard self.atlasModel.filterMode == 1 && self.atlasModel.currentConfig.mode == .learning else { return nil }
+            guard self.countryModel.filterMode == 1 && self.countryModel.currentConfig.mode == .learning else { return nil }
 
             // Left Yellow Swap Button (Unlearned)
             let unlearnedAction = UIContextualAction(style: .normal, title: nil) { _, _, completion in
 
-                self.atlasModel.markCountryAsLearned(at: indexPath)
+                self.countryModel.markCountryAsLearned(at: indexPath)
                 UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
                     self.reloadSnapshot()
                 })
@@ -475,8 +470,14 @@ extension CountryViewController {
     /// Opens settings screen (placeholder).
     /// TODO: Present SettingsViewController.
     @objc func settingsButtonTapped(){
-        let settingsVC = SettingsViewController(style: .insetGrouped)
-            navigationController?.pushViewController(settingsVC, animated: true)
+        let settingsVC = SettingsViewController(model: countryModel)
+        
+        settingsVC.onSettingsChange = { [weak self] in
+            guard let self = self else { return }
+            
+            self.reloadSnapshot()
+        }
+        navigationController?.pushViewController(settingsVC, animated: true)
     }
 
     //MARK: - Reset button tapped
@@ -485,15 +486,15 @@ extension CountryViewController {
     /// - testing: resets progress for the current testing aspect
     @objc func resetButtonTapped(){
         var message = ""
-        switch atlasModel.currentConfig.mode {
+        switch countryModel.currentConfig.mode {
         case .learning:
             message = "Are you sure you want to reset your learning progress?"
         case .testing:
-            if atlasModel.testingAspect == .capital {
+            if countryModel.testingAspect == .capital {
                 message = "Do you want to reset your capital test progress?"
-            } else if atlasModel.testingAspect == .country {
+            } else if countryModel.testingAspect == .country {
                 message = "Do you want to reset your country test progress?"
-            } else if atlasModel.testingAspect == .flag {
+            } else if countryModel.testingAspect == .flag {
                 message = "Do you want to reset your flag test progress?"
             }
         }
@@ -507,10 +508,10 @@ extension CountryViewController {
             guard let self = self else { return }
             lightHaptic?.impactOccurred()
 
-            if atlasModel.currentConfig.mode == .learning {
-                atlasModel.resetLearningProgress()
+            if countryModel.currentConfig.mode == .learning {
+                countryModel.resetLearningProgress()
             } else {
-                atlasModel.resetTestingProgress()
+                countryModel.resetTestingProgress()
             }
 
             UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
@@ -531,20 +532,20 @@ extension CountryViewController {
     /// Presents StudyModeViewController in a sheet.
     /// On confirmation: updates config, persists it, reloads data, and refreshes UI.
     @objc func modeButtonTapped() {
-        guard let world = atlasModel.world else { return }
+        guard let world = countryModel.world else { return }
 
-        let vc = StudyModeViewController(world: world, initialConfig: atlasModel.currentConfig)
+        let vc = StudyModeViewController(world: world, initialConfig: countryModel.currentConfig)
         let nav = UINavigationController(rootViewController: vc)
 
-        vc.selectedModeindex = atlasModel.currentConfig.mode.rawValue
-        vc.initialRegion = atlasModel.currentConfig.region
+        vc.selectedModeindex = countryModel.currentConfig.mode.rawValue
+        vc.initialRegion = countryModel.currentConfig.region
 
         vc.onSelectionConfirmed = { [weak self] region, mode in
             guard let self else { return }
 
-            self.atlasModel.currentConfig.region = region
-            self.atlasModel.currentConfig.mode = mode
-            self.atlasModel.saveUserConfiguratin((self.atlasModel.currentConfig))
+            self.countryModel.currentConfig.region = region
+            self.countryModel.currentConfig.mode = mode
+            self.countryModel.saveUserConfiguratin((self.countryModel.currentConfig))
             
             // Update bottom control bar mode and width.
             self.bottomControl.mode = mode == .learning ? .learning : .testing
@@ -554,7 +555,7 @@ extension CountryViewController {
             self.displayMode = .list
             self.bottomControl.resetToFirstSegment()
             let segment = mode == .testing ? bottomControl.currentTestingSegment.segment : bottomControl.currentLearningSegment.segment
-            atlasModel.updateFilterMode(segment)
+            countryModel.updateFilterMode(segment)
             
             //UI
             self.updateUIForConfig()
@@ -584,11 +585,11 @@ extension CountryViewController {
             case .toLearn:
                 self.setAnimatedTitle(segment.title)
                 self.displayMode = .list
-                self.atlasModel.updateFilterMode(segment.segment)
+                self.countryModel.updateFilterMode(segment.segment)
             case .learned:
                 self.setAnimatedTitle(segment.title)
                 self.displayMode = .list
-                self.atlasModel.updateFilterMode(segment.segment)
+                self.countryModel.updateFilterMode(segment.segment)
             case .stats:
                 self.setAnimatedTitle(segment.title)
                 self.displayMode = .stats
@@ -606,15 +607,15 @@ extension CountryViewController {
             case .untested:
                 self.setAnimatedTitle(segment.title)
                 self.displayMode = .list
-                self.atlasModel.updateFilterMode(segment.segment)
+                self.countryModel.updateFilterMode(segment.segment)
             case .failed:
                 self.setAnimatedTitle(segment.title)
                 self.displayMode = .list
-                self.atlasModel.updateFilterMode(segment.segment)
+                self.countryModel.updateFilterMode(segment.segment)
             case .passed:
                 self.setAnimatedTitle(segment.title)
                 self.displayMode = .list
-                self.atlasModel.updateFilterMode(segment.segment)
+                self.countryModel.updateFilterMode(segment.segment)
             case .result:
                 self.setAnimatedTitle(segment.title)
                 self.displayMode = .stats
@@ -632,10 +633,10 @@ extension CountryViewController {
     /// - Switches bottom control mode
     /// - Updates screen title based on the currently selected segment
     private func updateUIForConfig() {
-        let mode = atlasModel.currentConfig.mode
+        let mode = countryModel.currentConfig.mode
 
-        modeButton.image = atlasModel.currentConfig.mode == .learning ? UIImage(systemName: "book.fill") : UIImage(systemName: "person.fill.questionmark")
-        modeButton.tintColor = atlasModel.currentConfig.mode == .learning ? AppColors.marine : AppColors.coolred
+        modeButton.image = countryModel.currentConfig.mode == .learning ? UIImage(systemName: "book.fill") : UIImage(systemName: "person.fill.questionmark")
+        modeButton.tintColor = countryModel.currentConfig.mode == .learning ? AppColors.marine : AppColors.coolred
 
         bottomControl.mode = (mode == .learning) ? .learning : .testing
         bottomControlWidthConstraint.constant = bottomControl.preferredWidth
@@ -662,23 +663,23 @@ extension CountryViewController {
 
     /// Refreshes world snapshot using current filters (region/mode/search/etc.).
     func reloadWorldSnapshot() {
-        snapshotWorld = atlasModel.filteredWorld()
+        snapshotWorld = countryModel.filteredWorld()
     }
 
     /// Refreshes statistics snapshot depending on current study mode.
     func reloadStatsSnapshot() {
-        switch atlasModel.currentConfig.mode {
+        switch countryModel.currentConfig.mode {
         case .learning:
-            snapshotStats =  atlasModel.getStatistics()
+            snapshotStats =  countryModel.getStatistics()
         case .testing:
-            snapshotTestStats = atlasModel.getTestStatistics()
+            snapshotTestStats = countryModel.getTestStatistics()
         }
     }
 
     /// (Not used currently) Explicit testing stats reload helper.
     func reloadStatsTestSnapshot() {
         //snapshotStatsTest = atlasModel.getStatistics(for: .testing)
-        snapshotTestStats = atlasModel.getTestStatistics()
+        snapshotTestStats = countryModel.getTestStatistics()
     }
 
 }
@@ -694,7 +695,7 @@ extension CountryViewController: UICollectionViewDataSource {
         if displayMode == .list {
             return snapshotWorld.continents.count
         } else {
-            switch atlasModel.currentConfig.mode {
+            switch countryModel.currentConfig.mode {
             case .learning:
                 return snapshotStats.count
             case .testing:
@@ -720,17 +721,18 @@ extension CountryViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if displayMode == .list {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CountryCell.reusedId, for: indexPath) as! CountryCell
+            //cell.maskMode = Settings.maskMode
             let continents = snapshotWorld.continents[indexPath.section]
             let country = continents.countries[indexPath.item]
 
-            let testingAspect = atlasModel.testingAspect
-            let isTestingMode = atlasModel.currentConfig.mode == .testing ? true : false
+            let testingAspect = countryModel.testingAspect
+            let isTestingMode = countryModel.currentConfig.mode == .testing ? true : false
             let currentSegment = bottomControl.currentTestingSegment.segment
 
-            cell.configure(country: country, testingAspect: testingAspect, isTestingMode: isTestingMode, currentSegment: currentSegment)
+            cell.configure(country: country, testingAspect: testingAspect, isTestingMode: isTestingMode, currentSegment: currentSegment, maskMode: countryModel.maskMode)
             return cell
         } else {
-            switch atlasModel.currentConfig.mode {
+            switch countryModel.currentConfig.mode {
             case .learning:
                 let stats = snapshotStats[indexPath.section]
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: LearnStatsCell.reusedId, for: indexPath) as! LearnStatsCell
@@ -753,8 +755,8 @@ extension CountryViewController: UICollectionViewDataSource {
         //Display list mode (segments 0, 1)
         if displayMode == .list {
             let continent = snapshotWorld.continents[indexPath.section]
-            let totalCount = atlasModel.getTotal(for: indexPath)
-            let currentCount = atlasModel.getCurrentCount(for: indexPath)
+            let totalCount = countryModel.getTotal(for: indexPath)
+            let currentCount = countryModel.getCurrentCount(for: indexPath)
 
             //Header
             if kind == UICollectionView.elementKindSectionHeader {
@@ -770,7 +772,7 @@ extension CountryViewController: UICollectionViewDataSource {
                 return footer
             }
         } else {
-            switch atlasModel.currentConfig.mode {
+            switch countryModel.currentConfig.mode {
             case .learning:
                 //Display Statistics mode (segment 2)
                 let continent = snapshotStats[indexPath.section]
@@ -822,15 +824,15 @@ extension CountryViewController {
     /// - only when "untested" segment is selected
     /// - do not present while keyboard is visible
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard atlasModel.currentConfig.mode == .testing else { return }
+        guard countryModel.currentConfig.mode == .testing else { return }
         guard bottomControl.currentTestingSegment == .untested else { return }
         guard !isKeyboardVisible else { return }
 
         let country = snapshotWorld.continents[indexPath.section].countries[indexPath.item]
-        let style: TestQuestionViewController.OptionSytle = atlasModel.testingAspect == .flag ? .flag : .text
-        let aspect: TestQuestionViewController.TestingAspect =  atlasModel.testingAspect == .capital ? .capital : (atlasModel.testingAspect == .country ? .country : .flag)
+        let style: TestQuestionViewController.OptionSytle = countryModel.testingAspect == .flag ? .flag : .text
+        let aspect: TestQuestionViewController.TestingAspect =  countryModel.testingAspect == .capital ? .capital : (countryModel.testingAspect == .country ? .country : .flag)
 
-        let question = atlasModel.makeTestQuestion(for: country)
+        let question = countryModel.makeTestQuestion(for: country)
 
         let vc = TestQuestionViewController(question: question, style: style, aspect: aspect)
         vc.modalPresentationStyle = .overFullScreen
@@ -840,7 +842,7 @@ extension CountryViewController {
         vc.onAnswerSelected = { [weak self] isCorrect in
             guard let self else { return }
 
-            self.atlasModel.updateTestResult(for: country, aspect: self.atlasModel.testingAspect, result: isCorrect)
+            self.countryModel.updateTestResult(for: country, aspect: self.countryModel.testingAspect, result: isCorrect)
 
             
             UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
@@ -909,11 +911,11 @@ extension CountryViewController {
 
     /// Enables/disables reset button depending on whether progress exists.
     func setResetButtonState() {
-        switch atlasModel.currentConfig.mode {
+        switch countryModel.currentConfig.mode {
         case .learning:
-            resetButton.isEnabled =  atlasModel.startedLearning ? true : false
+            resetButton.isEnabled =  countryModel.startedLearning ? true : false
         case .testing:
-            resetButton.isEnabled =  atlasModel.startedTesting ? true : false
+            resetButton.isEnabled =  countryModel.startedTesting ? true : false
         }
     }
 }
@@ -949,10 +951,10 @@ extension CountryViewController: UISearchBarDelegate, UISearchControllerDelegate
     /// Empty string resets the filter.
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
-            atlasModel.setSearchQuery(nil)
+            countryModel.setSearchQuery(nil)
         } else {
             UIView.transition(with: self.collectionView, duration: 0.25, options: [.transitionCrossDissolve, .allowUserInteraction], animations: {
-                self.atlasModel.setSearchQuery(searchText)
+                self.countryModel.setSearchQuery(searchText)
             })
         }
         reloadSnapshot()
@@ -962,7 +964,7 @@ extension CountryViewController: UISearchBarDelegate, UISearchControllerDelegate
     /// Handles Cancel tap: resets search query and reloads full list.
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
 
-        atlasModel.setSearchQuery(nil)
+        countryModel.setSearchQuery(nil)
         reloadSnapshot()
     }
 
@@ -973,7 +975,7 @@ extension CountryViewController: UISearchBarDelegate, UISearchControllerDelegate
 
     /// Called when search UI is dismissed: reset query and reload.
     func didDismissSearchController(_ searchController: UISearchController) {
-            atlasModel.setSearchQuery(nil)
+            countryModel.setSearchQuery(nil)
             reloadSnapshot()
         }
 }
