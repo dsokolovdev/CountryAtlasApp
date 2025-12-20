@@ -4,7 +4,7 @@
 //  Created by Dmitri  on 06.12.25.
 //
 //  Description:
-//  Main screen of AtlasMaster.
+//  Main screen of CountryMaster.
 //  Displays a list of countries grouped by continents (learning/testing flows)
 //  and a statistics screen (learning/testing results).
 //  Owns a UICollectionView with two layouts: list + stats.
