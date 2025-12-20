@@ -389,8 +389,8 @@ final class CountryModel {
     
     /// Load mask mode config
     private func loadMaskModeConfig() {
-       if let maskMode =  dataStore.loadMaskMode() {
-           self.maskMode = MaskMode(rawValue: maskMode) ?? .normal
+        if let maskMode =  dataStore.loadMaskMode() {
+            self.maskMode = MaskMode(rawValue: maskMode) ?? .normal
         }
     }
     /// Loads saved user configuration
@@ -434,162 +434,162 @@ final class CountryModel {
 // MARK: - Test Question Generation
 
 extension CountryModel {
-
-/// Builds a test question for a given country
-func makeTestQuestion(for country: Country) -> TestQuestion {
-    let aspect = testingAspect
-    let correctTitle = title(for: country, aspect: aspect)
-
-    var titles = Set<String>()
-    titles.insert(correctTitle)
-
-    let distractors = randomDistractorTitles(
-        for: aspect,
-        excluding: country,
-        correctTitle: correctTitle,
-        count: 3
-    )
-
-    titles.formUnion(distractors)
-
-    let options = titles.map { TestOption(title: $0) }.shuffled()
-
-    guard let correctIndex = options.firstIndex(where: { $0.title == correctTitle }) else {
-        return TestQuestion(country: country, options: options, correctIndex: 0)
+    
+    /// Builds a test question for a given country
+    func makeTestQuestion(for country: Country) -> TestQuestion {
+        let aspect = testingAspect
+        let correctTitle = title(for: country, aspect: aspect)
+        
+        var titles = Set<String>()
+        titles.insert(correctTitle)
+        
+        let distractors = randomDistractorTitles(
+            for: aspect,
+            excluding: country,
+            correctTitle: correctTitle,
+            count: 3
+        )
+        
+        titles.formUnion(distractors)
+        
+        let options = titles.map { TestOption(title: $0) }.shuffled()
+        
+        guard let correctIndex = options.firstIndex(where: { $0.title == correctTitle }) else {
+            return TestQuestion(country: country, options: options, correctIndex: 0)
+        }
+        
+        return TestQuestion(country: country, options: options, correctIndex: correctIndex)
     }
-
-    return TestQuestion(country: country, options: options, correctIndex: correctIndex)
-}
-
-/// Returns correct answer title for a given aspect
-private func title(for country: Country, aspect: TestingAspect) -> String {
-    switch aspect {
-    case .capital: return country.capital
-    case .country: return country.name
-    case .flag:    return country.flag
-    }
-}
-
-/// Generates random distractor titles for testing
-private func randomDistractorTitles(
-    for aspect: TestingAspect,
-    excluding country: Country,
-    correctTitle: String,
-    count: Int
-) -> Set<String> {
-
-    guard let world else { return [] }
-
-    func regionFilter(_ continent: Continent) -> Bool {
-        switch currentConfig.region {
-        case .world: return true
-        case .continent(let name): return continent.name == name
+    
+    /// Returns correct answer title for a given aspect
+    private func title(for country: Country, aspect: TestingAspect) -> String {
+        switch aspect {
+        case .capital: return country.capital
+        case .country: return country.name
+        case .flag:    return country.flag
         }
     }
-
-    let allInRegion = world.continents
-        .filter(regionFilter)
-        .flatMap { $0.countries }
-        .filter { $0 != country }
-
-    let allWorld = world.continents
-        .flatMap { $0.countries }
-        .filter { $0 != country }
-
-    func makePool(from countries: [Country]) -> [String] {
-        countries
-            .map { title(for: $0, aspect: aspect) }
-            .filter {
-                !$0.isEmpty &&
-                $0 != correctTitle &&
-                !(aspect == .capital && $0 == "No capital")
+    
+    /// Generates random distractor titles for testing
+    private func randomDistractorTitles(
+        for aspect: TestingAspect,
+        excluding country: Country,
+        correctTitle: String,
+        count: Int
+    ) -> Set<String> {
+        
+        guard let world else { return [] }
+        
+        func regionFilter(_ continent: Continent) -> Bool {
+            switch currentConfig.region {
+            case .world: return true
+            case .continent(let name): return continent.name == name
             }
-    }
-
-    let pool1 = makePool(from: allInRegion.filter { ($0.testResults[aspect] ?? .notTested) == .notTested })
-    let pool2 = makePool(from: allInRegion)
-    let pool3 = makePool(from: allWorld)
-
-    var result = Set<String>()
-
-    for pool in [pool1, pool2, pool3] {
-        for t in pool.shuffled() {
-            result.insert(t)
-            if result.count == count { return result }
         }
+        
+        let allInRegion = world.continents
+            .filter(regionFilter)
+            .flatMap { $0.countries }
+            .filter { $0 != country }
+        
+        let allWorld = world.continents
+            .flatMap { $0.countries }
+            .filter { $0 != country }
+        
+        func makePool(from countries: [Country]) -> [String] {
+            countries
+                .map { title(for: $0, aspect: aspect) }
+                .filter {
+                    !$0.isEmpty &&
+                    $0 != correctTitle &&
+                    !(aspect == .capital && $0 == "No capital")
+                }
+        }
+        
+        let pool1 = makePool(from: allInRegion.filter { ($0.testResults[aspect] ?? .notTested) == .notTested })
+        let pool2 = makePool(from: allInRegion)
+        let pool3 = makePool(from: allWorld)
+        
+        var result = Set<String>()
+        
+        for pool in [pool1, pool2, pool3] {
+            for t in pool.shuffled() {
+                result.insert(t)
+                if result.count == count { return result }
+            }
+        }
+        
+        return result
     }
-
-    return result
-}
-
-/// Updates test result for a country
-func updateTestResult(for country: Country, aspect: TestingAspect, result: Bool) {
-    guard
-        let continentIndex = world?.continents.firstIndex(where: { $0.countries.contains(country) }),
-        let countryIndex = world?.continents[continentIndex].countries.firstIndex(of: country)
-    else { return }
-
-    world?.continents[continentIndex].countries[countryIndex].testResults[aspect] = result ? .passed : .failed
-    updateStartedTestingFlags()
-
-    if let world {
-        dataStore.saveWorldData(world)
+    
+    /// Updates test result for a country
+    func updateTestResult(for country: Country, aspect: TestingAspect, result: Bool) {
+        guard
+            let continentIndex = world?.continents.firstIndex(where: { $0.countries.contains(country) }),
+            let countryIndex = world?.continents[continentIndex].countries.firstIndex(of: country)
+        else { return }
+        
+        world?.continents[continentIndex].countries[countryIndex].testResults[aspect] = result ? .passed : .failed
+        updateStartedTestingFlags()
+        
+        if let world {
+            dataStore.saveWorldData(world)
+        }
+        
+        onWorldUpdated?()
     }
-
-    onWorldUpdated?()
-}
-
+    
 }
 
 // MARK: - Search Handling
 
 extension CountryModel {
-
-/// Updates search query
-func setSearchQuery(_ query: String?) {
-    searchQuery = query?.trimmingCharacters(in: .whitespacesAndNewlines)
-}
-
-/// Returns enabled search scopes based on mode and segment
-private func searchFlags() -> (continent: Bool, country: Bool, capital: Bool) {
-    let mode = currentConfig.mode
-    let segment = filterMode
-    let aspect = testingAspect
-
-    switch mode {
-    case .learning:
-        if segment == 2 { return (true, false, false) }
-        return (true, true, true)
-
-    case .testing:
-        if segment == 1 || segment == 2 { return (true, true, true) }
-        if segment == 3 { return (true, false, false) }
-
-        switch aspect {
-        case .capital: return (true, true, false)
-        case .country: return (true, false, true)
-        case .flag:    return (true, true, true)
+    
+    /// Updates search query
+    func setSearchQuery(_ query: String?) {
+        searchQuery = query?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    /// Returns enabled search scopes based on mode and segment
+    private func searchFlags() -> (continent: Bool, country: Bool, capital: Bool) {
+        let mode = currentConfig.mode
+        let segment = filterMode
+        let aspect = testingAspect
+        
+        switch mode {
+        case .learning:
+            if segment == 2 { return (true, false, false) }
+            return (true, true, true)
+            
+        case .testing:
+            if segment == 1 || segment == 2 { return (true, true, true) }
+            if segment == 3 { return (true, false, false) }
+            
+            switch aspect {
+            case .capital: return (true, true, false)
+            case .country: return (true, false, true)
+            case .flag:    return (true, true, true)
+            }
         }
     }
-}
-
-/// Applies search query to continent and country
-private func matchesSearch(continent: String, country: Country) -> Bool {
-    guard let q = searchQuery?.trimmingCharacters(in: .whitespacesAndNewlines), !q.isEmpty else { return true }
-
-    let flags = searchFlags()
-
-    if flags.continent, continent.localizedCaseInsensitiveContains(q) { return true }
-    if flags.country,   country.name.localizedCaseInsensitiveContains(q) { return true }
-    if flags.capital,   country.capital.localizedCaseInsensitiveContains(q) { return true }
-
-    return false
-}
-
-/// Applies search query to continent statistics
-private func matchesContinentStats(name: String) -> Bool {
-    guard let q = searchQuery?.trimmingCharacters(in: .whitespacesAndNewlines), !q.isEmpty else { return true }
-    return name.localizedCaseInsensitiveContains(q)
-}
-
+    
+    /// Applies search query to continent and country
+    private func matchesSearch(continent: String, country: Country) -> Bool {
+        guard let q = searchQuery?.trimmingCharacters(in: .whitespacesAndNewlines), !q.isEmpty else { return true }
+        
+        let flags = searchFlags()
+        
+        if flags.continent, continent.localizedCaseInsensitiveContains(q) { return true }
+        if flags.country,   country.name.localizedCaseInsensitiveContains(q) { return true }
+        if flags.capital,   country.capital.localizedCaseInsensitiveContains(q) { return true }
+        
+        return false
+    }
+    
+    /// Applies search query to continent statistics
+    private func matchesContinentStats(name: String) -> Bool {
+        guard let q = searchQuery?.trimmingCharacters(in: .whitespacesAndNewlines), !q.isEmpty else { return true }
+        return name.localizedCaseInsensitiveContains(q)
+    }
+    
 }

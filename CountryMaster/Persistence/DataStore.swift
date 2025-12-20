@@ -10,17 +10,17 @@ import Foundation
 /// - Study configuration (UserDefaults)
 /// - World model (JSON file in Documents directory)
 final class DataStore {
-
+    
     // MARK: - File URLs
-
+    
     /// File URL for storing the serialized World model (world.json)
     private let worldURL: URL = {
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return dir.appendingPathComponent("world.json")
     }()
-
+    
     // MARK: - UserDefaults Keys
-
+    
     /// Key for saving StudyConfiguration in UserDefaults
     private let configKey = "studyConfig"
     private let maskMode = "maskMode"
@@ -35,9 +35,9 @@ final class DataStore {
     func loadMaskMode() -> String? {
         UserDefaults.standard.string(forKey: maskMode)
     }
-
+    
     // MARK: - StudyConfiguration Persistence (UserDefaults)
-
+    
     /// Saves the current study configuration (mode + region)
     /// - Parameter config: User-selected study configuration
     func saveUserConfig(_ config: StudyConfiguration) {
@@ -46,7 +46,7 @@ final class DataStore {
             UserDefaults.standard.set(data, forKey: configKey)
         }
     }
-
+    
     /// Loads the previously saved study configuration
     /// - Returns: Stored StudyConfiguration or nil if not found
     func loadUserConfig() -> StudyConfiguration? {
@@ -56,9 +56,9 @@ final class DataStore {
         }
         return nil
     }
-
+    
     // MARK: - World Model Persistence (FileManager)
-
+    
     /// Saves the World model as a JSON file to the Documents directory
     /// - Parameter world: Fully built World model
     func saveWorldData(_ world: World) {
@@ -69,7 +69,7 @@ final class DataStore {
             print("Failed to save world:", error)
         }
     }
-
+    
     /// Loads the World model from the local JSON file
     /// - Returns: Decoded World model or nil if loading fails
     func loadWorldData() -> World? {

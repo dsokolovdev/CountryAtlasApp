@@ -14,194 +14,195 @@ import UIKit
 // MARK: - Test Statistics Cell
 
 final class TestStatsCell: UICollectionViewCell {
-
+    
     // MARK: - Reuse Identifier
-
+    
     static let reusedId = "TestStatsCell"
-
+    
     // MARK: - Progress View
-
+    
     /// Custom progress view displaying finished, passed and failed progress
     let progressView = TestProgressView()
-
+    
     // MARK: - Percentage Labels
-
+    
     /// Passed percentage value
     private let passedProgressLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .rounded(ofSize: 20, weight: .bold)
+        lbl.font = .rounded(ofSize: 20.scaled, weight: .bold)
         lbl.textAlignment = .left
         lbl.textColor = .systemYellow
         return lbl
     }()
-
+    
     /// Failed percentage value
     private let failedProgressLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .rounded(ofSize: 20, weight: .bold)
+        lbl.font = .rounded(ofSize: 20.scaled, weight: .bold)
         lbl.textAlignment = .left
         lbl.textColor = .systemYellow
         return lbl
     }()
-
+    
     /// Untested percentage value
     private let untestedProgressLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .rounded(ofSize: 20, weight: .bold)
+        lbl.font = .rounded(ofSize: 20.scaled, weight: .bold)
         lbl.textAlignment = .left
         lbl.textColor = .systemGreen
         return lbl
     }()
-
+    
     // MARK: - Percent Sign Labels
-
+    
     private let passedPercentLabel: UILabel = {
         let lbl = UILabel()
         lbl.text = "%"
-        lbl.font = .rounded(ofSize: 15, weight: .semibold)
+        lbl.font = .rounded(ofSize: 15.scaled, weight: .semibold)
         lbl.textAlignment = .left
         return lbl
     }()
-
+    
     private let failedPercentLabel: UILabel = {
         let lbl = UILabel()
         lbl.text = "%"
-        lbl.font = .rounded(ofSize: 15, weight: .semibold)
+        lbl.font = .rounded(ofSize: 15.scaled, weight: .semibold)
         lbl.textAlignment = .left
         return lbl
     }()
-
+    
     private let untestedPercentLabel: UILabel = {
         let lbl = UILabel()
         lbl.text = "%"
-        lbl.font = .rounded(ofSize: 15, weight: .semibold)
+        lbl.font = .rounded(ofSize: 15.scaled, weight: .semibold)
         lbl.textAlignment = .left
         return lbl
     }()
-
+    
     // MARK: - Status Icons
-
+    
     /// Passed icon
     private var passedIcon: UIImageView = {
         let img = UIImage(systemName: "checkmark.circle.fill")
         let imgView = UIImageView(image: img)
         imgView.contentMode = .scaleAspectFit
-        imgView.tintColor = AppColors.wildgreen
+        imgView.tintColor = .wildGreen
         return imgView
     }()
-
+    
     /// Failed icon
     private var failedIcon: UIImageView = {
         let img = UIImage(systemName: "xmark.circle.fill")
         let imgView = UIImageView(image: img)
         imgView.contentMode = .scaleAspectFit
-        imgView.tintColor = AppColors.carolinareaper
+        imgView.tintColor = .carolinaReaper
         return imgView
     }()
-
+    
     /// Untested icon
     private var untestedIcon: UIImageView = {
         let img = UIImage(systemName: "circle")
         let imgView = UIImageView(image: img)
         imgView.contentMode = .scaleAspectFit
-        imgView.tintColor = AppColors.greyblue
+        imgView.tintColor = .greyBlue
         return imgView
     }()
-
+    
     // MARK: - Stack Views
-
+    
     /// Stack for failed section
     private let hStackfailed: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.spacing = 6
+        stack.spacing = 6.scaled
         stack.distribution = .fill
         stack.alignment = .center
         return stack
     }()
-
+    
     /// Stack for passed section
     private let hStackPassed: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.spacing = 6
+        stack.spacing = 6.scaled
         stack.distribution = .fill
         stack.alignment = .center
         return stack
     }()
-
+    
     /// Stack for untested section
     private let hStackUntested: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.spacing = 6
+        stack.spacing = 6.scaled
         stack.distribution = .fill
         stack.alignment = .center
         return stack
     }()
-
+    
     /// Stack containing failed + passed blocks (equal width)
     private let hStackProgress: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.spacing = 6
+        stack.spacing = 6.scaled
         stack.distribution = .fillEqually
         stack.alignment = .center
         return stack
     }()
-
+    
     /// Root horizontal stack
     private let hStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .horizontal
-        stack.spacing = 6
+        stack.spacing = 6.scaled
         stack.distribution = .fill
         stack.alignment = .center
         return stack
     }()
-
+    
     // MARK: - Initializers
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-
+        
         // MARK: Progress View Layout
-
+        
         addSubview(progressView)
         progressView.translatesAutoresizingMaskIntoConstraints = false
-
-        let h: CGFloat = 0 * scaleFactor
-        let w: CGFloat = 16 * scaleFactor
+        
+        let h: CGFloat = 0
+        let w: CGFloat = 16.scaled
         NSLayoutConstraint.activate([
             progressView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: w),
             progressView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -w),
             progressView.topAnchor.constraint(equalTo: topAnchor, constant: h),
             progressView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -h)
         ])
-
+        
         // MARK: Stack Assembly
-
+        
         hStackfailed.addArrangedSubview(failedIcon)
         hStackfailed.addArrangedSubview(failedProgressLabel)
         hStackfailed.addArrangedSubview(failedPercentLabel)
-
+        
         hStackPassed.addArrangedSubview(passedIcon)
         hStackPassed.addArrangedSubview(passedProgressLabel)
         hStackPassed.addArrangedSubview(passedPercentLabel)
-
+        
         hStackUntested.addArrangedSubview(untestedIcon)
         hStackUntested.addArrangedSubview(untestedProgressLabel)
         hStackUntested.addArrangedSubview(untestedPercentLabel)
-
+        
+        let d: CGFloat = 16.scaled
         NSLayoutConstraint.activate([
-            passedIcon.widthAnchor.constraint(equalToConstant: 16),
-            passedIcon.heightAnchor.constraint(equalToConstant: 16),
-            failedIcon.widthAnchor.constraint(equalToConstant: 16),
-            failedIcon.heightAnchor.constraint(equalToConstant: 16),
-            untestedIcon.widthAnchor.constraint(equalToConstant: 16),
-            untestedIcon.heightAnchor.constraint(equalToConstant: 16)
+            passedIcon.widthAnchor.constraint(equalToConstant: d),
+            passedIcon.heightAnchor.constraint(equalToConstant: d),
+            failedIcon.widthAnchor.constraint(equalToConstant: d),
+            failedIcon.heightAnchor.constraint(equalToConstant: d),
+            untestedIcon.widthAnchor.constraint(equalToConstant: d),
+            untestedIcon.heightAnchor.constraint(equalToConstant: d)
         ])
-
+        
         // Prevent label compression
         failedProgressLabel.setContentHuggingPriority(.required, for: .horizontal)
         failedProgressLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -209,18 +210,18 @@ final class TestStatsCell: UICollectionViewCell {
         passedProgressLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         untestedProgressLabel.setContentHuggingPriority(.required, for: .horizontal)
         untestedProgressLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
-
+        
         hStackProgress.addArrangedSubview(hStackfailed)
         hStackProgress.addArrangedSubview(hStackPassed)
-
+        
         hStack.addArrangedSubview(hStackProgress)
         hStack.addArrangedSubview(hStackUntested)
-
+        
         addSubview(hStack)
         hStack.translatesAutoresizingMaskIntoConstraints = false
-
-        let heightConst: CGFloat = 10 * scaleFactor
-        let widthConst: CGFloat = 20 * scaleFactor
+        
+        let heightConst: CGFloat = 10.scaled
+        let widthConst: CGFloat = 20.scaled
         NSLayoutConstraint.activate([
             hStack.leadingAnchor.constraint(equalTo: progressView.leadingAnchor, constant: widthConst),
             hStack.trailingAnchor.constraint(equalTo: progressView.trailingAnchor, constant: -widthConst),
@@ -228,16 +229,16 @@ final class TestStatsCell: UICollectionViewCell {
             hStack.bottomAnchor.constraint(equalTo: progressView.bottomAnchor, constant: -heightConst)
         ])
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // MARK: - Configuration
-
+    
     /// Configures cell with test statistics
     func configure(with stats: ContinentTestStats) {
-
+        
         let passedRatio = stats.passedRatio
         let failedRatio = stats.failedRatio
         let passed = stats.passed
@@ -245,23 +246,23 @@ final class TestStatsCell: UICollectionViewCell {
         let total = stats.total
         let untested = stats.untested
         let untestedRatio = total > 0 ? Double(untested) / Double(total) : 0
-
+        
         progressView.setProgress(total: total, passed: passed, failed: failed)
-
+        
         passedProgressLabel.text = String(format: "%.1f", passedRatio * 100)
         failedProgressLabel.text = String(format: "%.1f", failedRatio * 100)
         untestedProgressLabel.text = String(format: "%.1f", untestedRatio * 100)
-
+        
         progressView.layoutIfNeeded()
-
+        
         passedProgressLabel.textColor = passedRatio > 0 ? .deepGreen : .deepGreen.withAlphaComponent(0.5)
         passedPercentLabel.textColor = passedRatio > 0 ? .deepGreen.withAlphaComponent(0.8) : .deepGreen.withAlphaComponent(0.5)
         passedIcon.tintColor = passedRatio > 0 ? .deepGreen : .deepGreen.withAlphaComponent(0.5)
-
+        
         failedProgressLabel.textColor = passedRatio > 0 ? .coolRed : .coolRed.withAlphaComponent(0.5)
         failedPercentLabel.textColor = passedRatio > 0 ? .coolRed.withAlphaComponent(0.8) : .coolRed.withAlphaComponent(0.5)
         failedIcon.tintColor = passedRatio > 0 ? .coolRed : .coolRed.withAlphaComponent(0.5)
-
+        
         untestedProgressLabel.textColor = passedRatio > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
         untestedPercentLabel.textColor = passedRatio > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
         untestedIcon.tintColor = passedRatio > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)

@@ -14,7 +14,7 @@ import UIKit
 
 // MARK: - BottomControlBar
 final class BottomControlBar: UIView {
-
+    
     // MARK: - Mode
     /// Defines which segmented control is visible.
     enum Mode { case learning, testing }
@@ -77,7 +77,7 @@ final class BottomControlBar: UIView {
         case passed
         case result
     }
-
+    
     // MARK: - Current Segments
     /// Currently selected learning segment.
     var currentLearningSegment: LearningSegment {
@@ -88,7 +88,7 @@ final class BottomControlBar: UIView {
     var currentTestingSegment: TestingSegment {
         TestingSegment(rawValue: testingSegment.selectedSegmentIndex) ?? .untested
     }
-
+    
     // MARK: - State
     /// Active mode of the control bar.
     var mode: Mode = .learning {
@@ -98,7 +98,7 @@ final class BottomControlBar: UIView {
     /// Preferred width depending on number of segments.
     var preferredWidth: CGFloat {
         let count = (mode == .learning) ? 3 : 4
-        return CGFloat(count) * 73
+        return CGFloat(count) * 73.scaled
     }
     
     // MARK: - Callbacks
@@ -108,27 +108,27 @@ final class BottomControlBar: UIView {
     /// Fired when testing segment changes.
     var onTestingChanged: ((TestingSegment) -> Void)?
     
-
+    
     // MARK: - Segmented Controls
     /// Segmented control for learning mode.
     private let learningSegment: UISegmentedControl = {
         let toLearn = UIImage(systemName: "lightbulb.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
         let learned = UIImage(systemName: "checkmark", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
         let progress = UIImage(systemName: "percent", withConfiguration: UIImage.SymbolConfiguration(weight: .semibold))
-
+        
         let sc = UISegmentedControl(items: [toLearn!, learned!, progress!])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
-        sc.selectedSegmentTintColor = AppColors.greyblue.withAlphaComponent(0.15)
+        sc.selectedSegmentTintColor = .greyBlue.withAlphaComponent(0.15)
         sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.7) }
         return sc
     }()
-
+    
     /// Segmented control for testing mode.
     private let testingSegment: UISegmentedControl = {
-        let testActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.deepgreen, AppColors.greyblue])
-        let failActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.coolred, AppColors.greyblue])
-        let passActiveConfig = UIImage.SymbolConfiguration(paletteColors: [AppColors.wildgreen, AppColors.greyblue])
+        let testActiveConfig = UIImage.SymbolConfiguration(paletteColors: [.deepGreen, .greyBlue])
+        let failActiveConfig = UIImage.SymbolConfiguration(paletteColors: [.coolRed, .greyBlue])
+        let passActiveConfig = UIImage.SymbolConfiguration(paletteColors: [.wildGreen, .greyBlue])
         
         let test = UIImage(systemName: "checklist", withConfiguration: testActiveConfig)
         let fail = UIImage(systemName: "text.badge.xmark", withConfiguration: failActiveConfig)
@@ -138,11 +138,11 @@ final class BottomControlBar: UIView {
         let sc = UISegmentedControl(items: [test!, fail!, pass!, result!])
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
-        sc.selectedSegmentTintColor = AppColors.greyblue.withAlphaComponent(0.15)
+        sc.selectedSegmentTintColor = .greyBlue.withAlphaComponent(0.15)
         sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.7) }
         return sc
     }()
-
+    
     // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -154,54 +154,54 @@ final class BottomControlBar: UIView {
         
         updateSegmentAppearance()
     }
-
+    
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setup()
         updateMode()
     }
-
+    
     // MARK: - Setup
     /// Performs initial view setup and constraints.
     private func setup() {
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = .systemBackground.withAlphaComponent(0.2)
-        layer.cornerRadius = 29 * scaleFactor
-
+        layer.cornerRadius = 29.scaled
+        
         layer.shadowColor = UIColor.label.cgColor
         layer.shadowOpacity = 0.1
         layer.shadowOffset = CGSize(width: 0, height: 2.5)
         layer.shadowRadius = 4
         layer.masksToBounds = false
-
+        
         // Add both segmented controls
         addSubview(learningSegment)
         addSubview(testingSegment)
         
-        let c: CGFloat = 2
+        let c: CGFloat = 2.scaled
         NSLayoutConstraint.activate([
             learningSegment.leadingAnchor.constraint(equalTo: leadingAnchor, constant: c),
             learningSegment.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -c),
             learningSegment.topAnchor.constraint(equalTo: topAnchor, constant: c),
             learningSegment.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -c),
-
+            
             testingSegment.leadingAnchor.constraint(equalTo: leadingAnchor, constant: c),
             testingSegment.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -c),
             testingSegment.topAnchor.constraint(equalTo: topAnchor, constant: c),
             testingSegment.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -c)
         ])
-
+        
         // Layout priorities
         setContentHuggingPriority(.defaultLow, for: .horizontal)
         setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-
+        
         learningSegment.setContentHuggingPriority(.defaultLow, for: .horizontal)
         learningSegment.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-
+        
         testingSegment.setContentHuggingPriority(.defaultLow, for: .horizontal)
         testingSegment.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
     }
-
+    
     // MARK: - Mode Switching
     /// Shows correct segmented control based on active mode.
     private func updateMode() {
@@ -225,44 +225,44 @@ final class BottomControlBar: UIView {
     /// Updates colors for learning segments.
     private func updateLearningColors() {
         let index = learningSegment.selectedSegmentIndex
-
+        
         let activeColor: UIColor
         switch index {
         case LearningSegment.toLearn.rawValue:
-            activeColor = AppColors.brightyellow
+            activeColor = .brightYellow
         case LearningSegment.learned.rawValue:
-            activeColor = AppColors.wildgreen
+            activeColor = .wildGreen
         case LearningSegment.stats.rawValue:
-            activeColor = AppColors.frightnight
+            activeColor = .frightNight
         default:
             activeColor = .label
         }
-
-        let inactiveColor = AppColors.greyblue.withAlphaComponent(0.5)
-        let size: CGFloat = 19 * scaleFactor
-
+        
+        let inactiveColor: UIColor = .greyBlue.withAlphaComponent(0.5)
+        let size: CGFloat = 19.scaled
+        
         learningSegment.setTitleTextAttributes([.foregroundColor: inactiveColor, .font: UIFont.systemFont(ofSize: size, weight: .semibold)], for: .normal)
         learningSegment.setTitleTextAttributes([.foregroundColor: activeColor, .font: UIFont.systemFont(ofSize: size, weight: .bold)], for: .selected)
     }
     
     /// Builds an icon image for testing segments.
     private func testingIcon(for style: TestingIconStyle, systemName: String) -> UIImage {
-        let size: CGFloat = 19 * scaleFactor
+        let size: CGFloat = 19.scaled
         let activeConfig = UIImage.SymbolConfiguration(pointSize: size, weight: .semibold)
         let inactiveConfig = UIImage.SymbolConfiguration(pointSize: size, weight: .medium)
         let config: UIImage.SymbolConfiguration
-
+        
         switch style {
         case .inactive:
             config = UIImage.SymbolConfiguration(paletteColors: [.systemGray, .lightGray]).applying(inactiveConfig)
         case .untested:
-            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.darkblue, AppColors.greyblue]).applying(activeConfig)
+            config = UIImage.SymbolConfiguration(paletteColors: [.darkBlue, .greyBlue]).applying(activeConfig)
         case .failed:
-            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.coolred, AppColors.greyblue]).applying(activeConfig)
+            config = UIImage.SymbolConfiguration(paletteColors: [.coolRed, .greyBlue]).applying(activeConfig)
         case .passed:
-            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.wildgreen, AppColors.greyblue]).applying(activeConfig)
+            config = UIImage.SymbolConfiguration(paletteColors: [.wildGreen, .greyBlue]).applying(activeConfig)
         case .result:
-            config = UIImage.SymbolConfiguration(paletteColors: [AppColors.marine, AppColors.greyblue]).applying(activeConfig)
+            config = UIImage.SymbolConfiguration(paletteColors: [.merchantMarine, .greyBlue]).applying(activeConfig)
         }
         return UIImage(systemName: systemName, withConfiguration: config)!
     }

@@ -37,51 +37,51 @@ enum StudyMode: Int, Codable {
 enum Region: Codable {
     case world
     case continent(String)
-
+    
     // MARK: Codable Keys
-
+    
     private enum CodingKeys: String, CodingKey {
         case type
         case name
     }
-
+    
     // MARK: Codable - Encode
-
+    
     /// Encodes Region into a keyed container:
     /// - world -> { type: "world" }
     /// - continent("Europe") -> { type: "continent", name: "Europe" }
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-
+        
         switch self {
         case .world:
             try container.encode("world", forKey: .type)
-
+            
         case .continent(let name):
             try container.encode("continent", forKey: .type)
             try container.encode(name, forKey: .name)
         }
     }
-
+    
     // MARK: Codable - Decode
-
+    
     /// Decodes Region from a keyed container:
     /// - type == "world" -> .world
     /// - type == "continent" + name -> .continent(name)
     /// Throws if type is unknown/corrupted.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
+        
         let type = try container.decode(String.self, forKey: .type)
-
+        
         switch type {
         case "world":
             self = .world
-
+            
         case "continent":
             let name = try container.decode(String.self, forKey: .name)
             self = .continent(name)
-
+            
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: .type,

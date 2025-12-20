@@ -11,14 +11,14 @@ import UIKit
 /// Static and structured settings used by SettingsViewController.
 /// Contains UI sections and footer information.
 struct Settings {
-
+    
     // MARK: - Footer Text
     /// Footer text displayed at the bottom of Settings screen.
     /// Shows app name, version, build number and author info.
     static var settingsFooterText: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
-
+        
         return """
         CountryMaster
         Version: \(version) (\(build))
@@ -26,13 +26,13 @@ struct Settings {
         © 2025
         """
     }
-
+    
     // MARK: - Table Sections
     /// Sections displayed in Settings table view.
     /// Currently contains testing-related settings only.
     let sections: [Section] = [
         Section(title: "Testing mode", rows: [
-            Row(text: "Mask mode")
+            Row(text: "Answer masking")
         ])
     ]
 }
@@ -54,16 +54,16 @@ struct Row {
 /// Defines how answers are masked during testing mode.
 /// Used by both Settings and CountryCell.
 enum MaskMode: String, CaseIterable {
-
+    
     /// Shuffled letters (light difficulty)
     case lite
-
+    
     /// Asterisks per letter (normal difficulty)
     case normal
-
+    
     /// Fully hidden value (hard difficulty)
     case hard
-
+    
     /// Human-readable title shown in UI.
     var title: String {
         switch self {

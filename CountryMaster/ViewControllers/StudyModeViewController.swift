@@ -98,10 +98,12 @@ extension StudyModeViewController {
         
         view.addSubview(studyModeSegmentedControl)
         
+        let b: CGFloat = 20.scaled
+        let w: CGFloat = 200.scaled
         NSLayoutConstraint.activate([
-            studyModeSegmentedControl.bottomAnchor.constraint(equalTo: glassView.topAnchor, constant: -20),
+            studyModeSegmentedControl.bottomAnchor.constraint(equalTo: glassView.topAnchor, constant: -b),
             studyModeSegmentedControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            studyModeSegmentedControl.widthAnchor.constraint(equalToConstant: 200)
+            studyModeSegmentedControl.widthAnchor.constraint(equalToConstant: w)
         ])
         
         setColors()
@@ -112,12 +114,12 @@ extension StudyModeViewController {
     func setupContinentPicker() {
         glassView = UIView()
         glassView.backgroundColor = UIColor.white.withAlphaComponent(0.15)
-        glassView.layer.cornerRadius = 20
+        glassView.layer.cornerRadius = 20.scaled
         glassView.layer.borderWidth = 1
         glassView.layer.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
         glassView.layer.shadowColor = UIColor.black.cgColor
         glassView.layer.shadowOpacity = 0.2
-        glassView.layer.shadowRadius = 20
+        glassView.layer.shadowRadius = 20.scaled
         glassView.layer.shadowOffset = .zero
         glassView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -126,22 +128,24 @@ extension StudyModeViewController {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
         sortedContinents.insert(Continent(name: "World", countries: []), at: 0)
-
+        
         continentPicker = ContinentPickerView(continents: sortedContinents)
         continentPicker.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(glassView)
         glassView.addSubview(continentPicker)
         
+        let b: CGFloat = 12.scaled
+        let c: CGFloat = 8.scaled
         NSLayoutConstraint.activate([
-            glassView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
+            glassView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -b),
             glassView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            glassView.heightAnchor.constraint(equalToConstant: 160 * scaleFactor),
-            glassView.widthAnchor.constraint(equalToConstant: 300 * scaleFactor),
+            glassView.heightAnchor.constraint(equalToConstant: 160.scaled),
+            glassView.widthAnchor.constraint(equalToConstant: 300.scaled),
             
             // Picker inside the glass
-            continentPicker.topAnchor.constraint(equalTo: glassView.topAnchor, constant: 8),
-            continentPicker.bottomAnchor.constraint(equalTo: glassView.bottomAnchor, constant: -8),
+            continentPicker.topAnchor.constraint(equalTo: glassView.topAnchor, constant: c),
+            continentPicker.bottomAnchor.constraint(equalTo: glassView.bottomAnchor, constant: -c),
             continentPicker.leadingAnchor.constraint(equalTo: glassView.leadingAnchor),
             continentPicker.trailingAnchor.constraint(equalTo: glassView.trailingAnchor)
         ])
@@ -177,9 +181,9 @@ extension StudyModeViewController {
     /// Updates segmented control colors based on selected mode.
     func setColors() {
         let currentIndex = studyModeSegmentedControl.selectedSegmentIndex
-        let size: CGFloat = 16
+        let size: CGFloat = 16.scaled
         let inactiveColor = UIColor.secondaryLabel
-        let activeColor = currentIndex == 0 ? AppColors.marine : AppColors.coolred
+        let activeColor: UIColor = currentIndex == 0 ? .merchantMarine : .coolRed
         let inactiveFont = UIFont.systemFont(ofSize: size, weight: .medium)
         let activeFont = UIFont.systemFont(ofSize: size, weight: .medium)
         
@@ -197,25 +201,25 @@ extension StudyModeViewController {
         case .continent(let continentName):
             name = continentName
         }
-
+        
         continentPicker.selectContinent(named: name)
     }
 }
 
 // MARK: - Navigation Title Appearance
 extension StudyModeViewController {
-   
+    
     /// Configures navigation bar title font and color.
     private func configureNavigationTitle() {
         let appearance = UINavigationBarAppearance()
         //appearance.configureWithOpaqueBackground()
         // appearance.backgroundColor = .systemBackground
-
+        
         appearance.titleTextAttributes = [
-            .font: UIFont.rounded(ofSize: 18, weight: .medium),
+            .font: UIFont.rounded(ofSize: 18.scaled, weight: .medium),
             .foregroundColor: UIColor.label
         ]
-
+        
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance

@@ -17,14 +17,14 @@ final class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDel
     // MARK: - UI
     /// Underlying system picker view.
     private let picker = UIPickerView()
-
+    
     // MARK: - Data
     /// List of available continents ("World" may be injected by caller).
     var continents: [Continent]
-
+    
     /// Currently selected index in the picker.
     var currentIndex: Int = 0
-
+    
     /// Convenience accessor for the currently selected continent name.
     var selectedName: String {
         let row = picker.selectedRow(inComponent: 0)
@@ -48,7 +48,7 @@ final class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDel
     /// Configures picker view, appearance, and constraints.
     private func setup() {
         backgroundColor = .clear
-        layer.cornerRadius = 16
+        layer.cornerRadius = 16.scaled
         layer.masksToBounds = true
         
         picker.dataSource = self
@@ -90,10 +90,10 @@ final class ContinentPickerView: UIView, UIPickerViewDataSource, UIPickerViewDel
         
         // Style "World" differently
         label.font = label.text == "World"
-            ? UIFont.rounded(ofSize: 22, weight: .medium)
-            : UIFont.rounded(ofSize: 22, weight: .regular)
+        ? UIFont.rounded(ofSize: 22.scaled, weight: .medium)
+        : UIFont.rounded(ofSize: 22.scaled, weight: .regular)
         
-        label.textColor = label.text == "World" ? AppColors.darkblue : .label
+        label.textColor = label.text == "World" ? .darkBlue : .label
         
         return label
     }

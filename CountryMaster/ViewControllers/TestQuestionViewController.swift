@@ -19,16 +19,16 @@ final class TestQuestionViewController: UIViewController {
     /// Defines how answer options are displayed (text or flag).
     enum OptionSytle: CGFloat {
         case text = 18
-        case flag = 50
+        case flag = 60
         
         /// Base size used for option layout.
-        var size: CGFloat { self.rawValue }
+        var size: CGFloat { self.rawValue.scaled }
         
         /// Font size for option titles depending on style.
         var optionFontSize: CGFloat {
             switch self {
-            case .flag: return 60
-            case .text: return 18
+            case .flag: return 60.scaled
+            case .text: return 18.scaled
             }
         }
     }
@@ -45,10 +45,10 @@ final class TestQuestionViewController: UIViewController {
             switch self {
             case .capital:
                 return "What is the capital of \(country.name)?"
-
+                
             case .country:
                 return "\(country.capital) is the capital of which country?"
-
+                
             case .flag:
                 return "Which flag belongs to \(country.name)?"
             }
@@ -70,14 +70,14 @@ final class TestQuestionViewController: UIViewController {
     /// Card container view that holds all content.
     private let cardView: UIView = {
         let v = UIView()
-        v.backgroundColor = AppColors.quaternaryfill
-        v.layer.cornerRadius = 20
+        v.backgroundColor = .quternaryFill
+        v.layer.cornerRadius = 20.scaled
         v.translatesAutoresizingMaskIntoConstraints = false
-
+        
         // Card shadow
         v.layer.shadowColor = UIColor.black.cgColor
         v.layer.shadowOpacity = 0.2
-        v.layer.shadowRadius = 10
+        v.layer.shadowRadius = 10.scaled
         v.layer.shadowOffset = CGSize(width: 0, height: 4)
         return v
     }()
@@ -86,9 +86,9 @@ final class TestQuestionViewController: UIViewController {
     let titleLabel: UILabel = {
         let lbl = UILabel()
         lbl.text = "Question"
-        lbl.font = .rounded(ofSize: 20, weight: .semibold)
+        lbl.font = .rounded(ofSize: 20.scaled, weight: .semibold)
         lbl.textAlignment = .center
-        lbl.textColor = AppColors.greyblue
+        lbl.textColor = .greyBlue
         lbl.translatesAutoresizingMaskIntoConstraints = false
         return lbl
     }()
@@ -96,7 +96,7 @@ final class TestQuestionViewController: UIViewController {
     /// Label that displays the actual question text.
     let questionLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .rounded(ofSize: 16, weight: .regular)
+        lbl.font = .rounded(ofSize: 16.scaled, weight: .regular)
         lbl.textAlignment = .center
         lbl.numberOfLines = 0
         lbl.translatesAutoresizingMaskIntoConstraints = false
@@ -106,7 +106,7 @@ final class TestQuestionViewController: UIViewController {
     /// Label used to display result feedback (Correct / Wrong).
     private let resultLabel: UILabel = {
         let lbl = UILabel()
-        lbl.font = .rounded(ofSize: 22, weight: .semibold)
+        lbl.font = .rounded(ofSize: 22.scaled, weight: .semibold)
         lbl.textAlignment = .center
         lbl.alpha = 0
         lbl.translatesAutoresizingMaskIntoConstraints = false
@@ -118,7 +118,7 @@ final class TestQuestionViewController: UIViewController {
         let btn = UIButton(type: .system)
         btn.translatesAutoresizingMaskIntoConstraints = false
         btn.setTitle("Done", for: .normal)
-        btn.titleLabel?.font = .rounded(ofSize: 16, weight: .semibold)
+        btn.titleLabel?.font = .rounded(ofSize: 16.scaled, weight: .semibold)
         return btn
     }()
     
@@ -126,7 +126,7 @@ final class TestQuestionViewController: UIViewController {
     let optionsVStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 16
+        stack.spacing = 16.scaled
         stack.alignment = .fill
         stack.distribution = .fill
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -155,10 +155,10 @@ final class TestQuestionViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Semi-transparent background overlay
         view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
-       
+        
         setupCardView()
         setupDoneButton()
         setupTitleLabel()
@@ -179,17 +179,18 @@ extension TestQuestionViewController {
     private func setupCardView() {
         view.addSubview(cardView)
         
+        let w: CGFloat = 320.scaled
         NSLayoutConstraint.activate([
             cardView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             cardView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            cardView.widthAnchor.constraint(equalToConstant: 320)
+            cardView.widthAnchor.constraint(equalToConstant: w)
         ])
     }
     
     /// Adds result label to card view.
     private func setupResultLabel() {
         cardView.addSubview(resultLabel)
-
+        
         NSLayoutConstraint.activate([
             resultLabel.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
             resultLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor)
@@ -200,10 +201,11 @@ extension TestQuestionViewController {
     private func setupDoneButton() {
         doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         cardView.addSubview(doneButton)
-
+        
+        let c: CGFloat = 12.scaled
         NSLayoutConstraint.activate([
-            doneButton.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
-            doneButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12)
+            doneButton.topAnchor.constraint(equalTo: cardView.topAnchor, constant: c),
+            doneButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -c)
         ])
     }
     
@@ -211,8 +213,9 @@ extension TestQuestionViewController {
     private func setupTitleLabel() {
         cardView.addSubview(titleLabel)
         
+        let t: CGFloat = 16.scaled
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
+            titleLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: t),
             titleLabel.centerXAnchor.constraint(equalTo: cardView.centerXAnchor)
         ])
     }
@@ -221,11 +224,13 @@ extension TestQuestionViewController {
     private func setupQuestionLabel() {
         cardView.addSubview(questionLabel)
         
+        let t: CGFloat = 16.scaled
+        let w: CGFloat = 8.scaled
         NSLayoutConstraint.activate([
-            questionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            questionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: t),
             questionLabel.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
-            questionLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
-            questionLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8)
+            questionLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: w),
+            questionLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -w)
         ])
     }
     
@@ -235,7 +240,7 @@ extension TestQuestionViewController {
         [optionOneButton, optionTwoButton, optionThreeButton, optionFourButton].forEach {
             $0.addTarget(self, action: #selector(choiceMade(sender:)), for: .touchUpInside)
             $0.titleLabel?.font = .systemFont(ofSize: size, weight: .medium)
-            $0.tintColor = AppColors.darkblue
+            $0.tintColor = .darkBlue
             $0.titleLabel?.numberOfLines = 0
             $0.titleLabel?.lineBreakMode = .byWordWrapping
         }
@@ -244,14 +249,15 @@ extension TestQuestionViewController {
     /// Adds options stack and chooses layout based on style.
     private func setupOptionsVStack() {
         cardView.addSubview(optionsVStack)
-
+        
+        let d: CGFloat = 24.scaled
         NSLayoutConstraint.activate([
-            optionsVStack.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: 24),
-            optionsVStack.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -24),
-            optionsVStack.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 24),
-            optionsVStack.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -24)
+            optionsVStack.topAnchor.constraint(equalTo: questionLabel.bottomAnchor, constant: d),
+            optionsVStack.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -d),
+            optionsVStack.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: d),
+            optionsVStack.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -d)
         ])
-
+        
         switch style {
         case .text:
             setupTextOptions()
@@ -294,7 +300,7 @@ extension TestQuestionViewController {
     private func showResult(isCorrect: Bool) {
         resultLabel.text = isCorrect ? "Correct ✓" : "Wrong ✕"
         resultLabel.textColor = isCorrect ? .systemGreen : .systemRed
-
+        
         UIView.animate(withDuration: 0.25) {
             self.resultLabel.alpha = 1
             self.optionsVStack.alpha = 0.14
@@ -316,20 +322,20 @@ extension TestQuestionViewController {
     private func setupFlagOptions() {
         let row1 = UIStackView()
         row1.axis = .horizontal
-        row1.spacing = 16
+        row1.spacing = 16.scaled
         row1.distribution = .fillEqually
-
+        
         let row2 = UIStackView()
         row2.axis = .horizontal
-        row2.spacing = 16
+        row2.spacing = 16.scaled
         row2.distribution = .fillEqually
-
+        
         row1.addArrangedSubview(optionOneButton)
         row1.addArrangedSubview(optionTwoButton)
-
+        
         row2.addArrangedSubview(optionThreeButton)
         row2.addArrangedSubview(optionFourButton)
-
+        
         optionsVStack.addArrangedSubview(row1)
         optionsVStack.addArrangedSubview(row2)
     }

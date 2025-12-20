@@ -83,7 +83,7 @@ extension SettingsViewController {
         // MARK: - Accessory Button (Mask Mode Selector)
         let button = UIButton(type: .system)
         button.setTitle(model.maskMode.title, for: .normal)
-        button.titleLabel?.font = .rounded(ofSize: 16, weight: .medium)
+        button.titleLabel?.font = .rounded(ofSize: 16.scaled, weight: .medium)
         
         // Build menu from all MaskMode cases
         button.menu = UIMenu(
@@ -136,11 +136,11 @@ extension SettingsViewController {
     
     /// Attaches footer displaying app version/build info.
     private func configureFooter() {
-        let size: CGFloat = max(12, 13 * scaleFactor)
+        let size: CGFloat = max(12.scaled, 13.scaled)
         
         let footerLabel = UILabel()
         footerLabel.text = Settings.settingsFooterText
-        footerLabel.font = .systemFont(ofSize: size)
+        footerLabel.font = .systemFont(ofSize: size.scaled)
         footerLabel.textColor = .secondaryLabel
         footerLabel.textAlignment = .center
         footerLabel.numberOfLines = 0
@@ -149,8 +149,8 @@ extension SettingsViewController {
         let footerView = UIView()
         footerView.addSubview(footerLabel)
         
-        let w: CGFloat = 16 * scaleFactor
-        let h: CGFloat = 8 * scaleFactor
+        let w: CGFloat = 16.scaled
+        let h: CGFloat = 8.scaled
         
         NSLayoutConstraint.activate([
             footerLabel.leadingAnchor.constraint(equalTo: footerView.leadingAnchor, constant: w),
@@ -163,7 +163,7 @@ extension SettingsViewController {
             x: 0,
             y: 0,
             width: tableView.bounds.width,
-            height: 120 * scaleFactor
+            height: 120.scaled
         )
         
         tableView.tableFooterView = footerView

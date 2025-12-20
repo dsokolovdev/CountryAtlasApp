@@ -79,3 +79,16 @@ enum LayoutType: String {
         }
     }
 }
+
+
+extension BinaryFloatingPoint {
+    var scaled: Self {
+        self * Self(scaleFactor)
+    }
+}
+
+extension BinaryInteger {
+    var scaled: Int {
+        Int((Double(self) * Double(scaleFactor)).rounded())
+    }
+}
