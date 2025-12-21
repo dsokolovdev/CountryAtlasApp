@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Images/AppIcon.png" width="100">
+  <img src="Images/Preview.png" width="800">
 </p>
 
 # CountryMaster
