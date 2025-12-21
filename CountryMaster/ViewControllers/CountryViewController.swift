@@ -602,6 +602,7 @@ extension CountryViewController {
             self.bottomControl.resetToFirstSegment()
             let segment = mode == .testing ? bottomControl.currentTestingSegment.segment : bottomControl.currentLearningSegment.segment
             countryModel.updateFilterMode(segment)
+            applyLayoutForCurrentMode()
             
             //UI
             self.updateUIForConfig()
