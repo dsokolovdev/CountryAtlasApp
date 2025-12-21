@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Images/AppIcon.png" width="120">
+</p>
+
 # CountryMaster
 
 CountryMaster is a lightweight iOS app for learning and testing world geography.
