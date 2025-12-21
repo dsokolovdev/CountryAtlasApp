@@ -120,7 +120,7 @@ final class BottomControlBar: UIVisualEffectView {
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
         sc.selectedSegmentTintColor = .greyBlue.withAlphaComponent(0.15)
-        sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.7) }
+        sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.1) }
         return sc
     }()
     
@@ -139,7 +139,7 @@ final class BottomControlBar: UIVisualEffectView {
         sc.translatesAutoresizingMaskIntoConstraints = false
         sc.selectedSegmentIndex = 0
         sc.selectedSegmentTintColor = .greyBlue.withAlphaComponent(0.15)
-        sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.7) }
+        sc.subviews.forEach { $0.backgroundColor = .systemBackground.withAlphaComponent(0.1) }
         return sc
     }()
     
