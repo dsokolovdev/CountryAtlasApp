@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="Images/Preview.png" width="800">
+  <img src="Images/Hero-image.png" width="800">
 </p>
 
 # CountryMaster
