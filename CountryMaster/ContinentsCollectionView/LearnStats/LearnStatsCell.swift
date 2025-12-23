@@ -205,7 +205,7 @@ final class LearnStatsCell: UICollectionViewCell {
         if name == "World" {
             progressView.setFillColor(.nasuPurple.withAlphaComponent(0.8))
         } else {
-            progressView.setFillColor(.nasuPurple.withAlphaComponent(0.8))
+            progressView.setFillColor(.bleuDeFrance)
         }
     }
 }
