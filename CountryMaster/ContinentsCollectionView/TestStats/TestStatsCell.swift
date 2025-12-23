@@ -243,6 +243,7 @@ final class TestStatsCell: UICollectionViewCell {
         let failedRatio = stats.failedRatio
         let passed = stats.passed
         let failed = stats.failed
+        let progress = passed + failed
         let total = stats.total
         let untested = stats.untested
         let untestedRatio = total > 0 ? Double(untested) / Double(total) : 0
@@ -255,16 +256,16 @@ final class TestStatsCell: UICollectionViewCell {
         
         progressView.layoutIfNeeded()
         
-        passedProgressLabel.textColor = passedRatio > 0 ? .deepGreen : .deepGreen.withAlphaComponent(0.5)
-        passedPercentLabel.textColor = passedRatio > 0 ? .deepGreen.withAlphaComponent(0.8) : .deepGreen.withAlphaComponent(0.5)
-        passedIcon.tintColor = passedRatio > 0 ? .deepGreen : .deepGreen.withAlphaComponent(0.5)
+        passedProgressLabel.textColor = progress > 0 ? .deepGreen : .deepGreen.withAlphaComponent(0.5)
+        passedPercentLabel.textColor = progress > 0 ? .deepGreen.withAlphaComponent(0.8) : .deepGreen.withAlphaComponent(0.5)
+        passedIcon.tintColor = progress > 0 ? .deepGreen : .deepGreen.withAlphaComponent(0.5)
         
-        failedProgressLabel.textColor = passedRatio > 0 ? .coolRed : .coolRed.withAlphaComponent(0.5)
-        failedPercentLabel.textColor = passedRatio > 0 ? .coolRed.withAlphaComponent(0.8) : .coolRed.withAlphaComponent(0.5)
-        failedIcon.tintColor = passedRatio > 0 ? .coolRed : .coolRed.withAlphaComponent(0.5)
+        failedProgressLabel.textColor = progress > 0 ? .coolRed : .coolRed.withAlphaComponent(0.5)
+        failedPercentLabel.textColor = progress > 0 ? .coolRed.withAlphaComponent(0.8) : .coolRed.withAlphaComponent(0.5)
+        failedIcon.tintColor = progress > 0 ? .coolRed : .coolRed.withAlphaComponent(0.5)
         
-        untestedProgressLabel.textColor = passedRatio > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
-        untestedPercentLabel.textColor = passedRatio > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
-        untestedIcon.tintColor = passedRatio > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
+        untestedProgressLabel.textColor = progress > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
+        untestedPercentLabel.textColor = progress > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
+        untestedIcon.tintColor = progress > 0 ? .greyBlue : .greyBlue.withAlphaComponent(0.5)
     }
 }

@@ -282,8 +282,6 @@ extension CountryViewController {
         // Trailing swipe (right-to-left): mark as learned, available only for "to learn" segment.
         config.trailingSwipeActionsConfigurationProvider = { [weak self] indexPath in
             guard let self = self else { return nil }
-            
-            //            guard self.atlasModel.currentConfig.mode == .learning else { return nil }
             guard self.countryModel.filterMode == 0 && self.countryModel.currentConfig.mode == .learning else { return nil }
             
             // Right Green Swap Button (Learned)

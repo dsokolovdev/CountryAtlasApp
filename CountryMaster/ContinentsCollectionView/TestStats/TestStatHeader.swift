@@ -79,19 +79,17 @@ final class TestStatHeader: UICollectionReusableView {
     /// Configures header appearance based on testing statistics
     /// - Parameter continent: ContinentTestStats model
     func configure(continent: ContinentTestStats) {
-        let learnedProgress = continent.passed
+        let learned = continent.passed
+        let failed = continent.failed
+        let progress = learned + failed
         let name = continent.name
         
         nameLabel.text = name
         
         if nameLabel.text == "World" {
-            nameLabel.textColor = learnedProgress > 0
-            ? .blue
-            : .blue.withAlphaComponent(0.5)
+            nameLabel.textColor = progress > 0 ? .blue : .blue.withAlphaComponent(0.5)
         } else {
-            nameLabel.textColor = learnedProgress > 0
-            ? .label
-            : .tertiaryLabel
+            nameLabel.textColor = progress > 0 ? .label : .tertiaryLabel
         }
         
         starImage.tintColor = name == "World" ? .purple : .blue

@@ -208,9 +208,7 @@ final class CountryModel {
         
         let worldPassed = allWorldCountries.filter { $0.testResults[aspect] == .passed }.count
         let worldFailed = allWorldCountries.filter { $0.testResults[aspect] == .failed }.count
-        let worldUntested = allWorldCountries.filter {
-            ($0.testResults[aspect] ?? .notTested) == .notTested
-        }.count
+        let worldUntested = allWorldCountries.filter { ($0.testResults[aspect] ?? .notTested) == .notTested }.count
         
         let worldTotal = allWorldCountries.count
         let worldFinished = worldPassed + worldFailed
@@ -232,9 +230,7 @@ final class CountryModel {
             
             let passed = countries.filter { $0.testResults[aspect] == .passed }.count
             let failed = countries.filter { $0.testResults[aspect] == .failed }.count
-            let untested = countries.filter {
-                ($0.testResults[aspect] ?? .notTested) == .notTested
-            }.count
+            let untested = countries.filter { ($0.testResults[aspect] ?? .notTested) == .notTested }.count
             
             let total = countries.count
             let finished = passed + failed
