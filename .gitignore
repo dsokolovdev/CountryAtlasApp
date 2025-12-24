@@ -1,20 +1,14 @@
 # Xcode
 DerivedData/
 build/
-*.pbxuser
-*.mode1v3
-*.mode2v3
-*.perspectivev3
 xcuserdata/
+*.xcuserdatad/
 
 # Swift Package Manager
 .build/
-Packages/
-Package.resolved
 
 # CocoaPods
 Pods/
-Podfile.lock
 
 # Carthage
 Carthage/Build/
@@ -25,7 +19,7 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 
-# Xcode playgrounds
+# Playgrounds
 timeline.xctimeline
 playground.xcworkspace
 
@@ -47,6 +41,8 @@ playground.xcworkspace
 *.xcarchive
 
 # Backup files
-*~ 
+*~
+
+# Design / auxiliary folders (not part of Xcode project)
 AppIcon/
 Linkedin/

@@ -150,7 +150,7 @@ extension CountryCell {
             return maskString(originalString: text)
             
         case .hard:
-            return String(repeating: "・", count: 6)
+            return String(repeating: "・", count: 5)
         }
     }
     

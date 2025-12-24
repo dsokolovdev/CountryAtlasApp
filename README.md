@@ -38,7 +38,7 @@ This project demonstrates practical UIKit skills, state-driven UI updates, and c
 - Progress tracking with clear states:
   - **To Learn**
   - **Learned**
-  - **Progress** (statistics per continent)
+  - **Progress** – statistics per continent
 - Swipe actions to mark countries as learned or unlearned.
 
 ### Testing Mode
@@ -55,14 +55,14 @@ This project demonstrates practical UIKit skills, state-driven UI updates, and c
 ### Answers Masking Settings
 - **Lite** — shuffled letters.
 - **Normal** — masked text (`****`).
-- **Hard** — fully masked with a constant number of symbols.
+- **Hard** — fully masked using a constant number of symbols.
 - Mask mode is configurable in **Settings** and persisted between app launches.
 
 ### UI & UX
 - Fully programmatic UI (no Storyboards).
 - Smooth animated transitions between modes and segments.
 - Adaptive layout for different screen sizes.
-- Bottom control bar with glass / blur appearance.
+- Bottom control bar with blur / translucent appearance.
 - Search support for fast country lookup.
 
 ---
@@ -76,7 +76,7 @@ This project demonstrates practical UIKit skills, state-driven UI updates, and c
 - **MVC architecture**
 - Persistence via **UserDefaults** and **FileManager**
 - **Data & Networking**
-	- Country and continent data loaded from REST Countries API.
+	- Country and continent data loaded from REST Countries.
 	- JSON decoding and model mapping.
 	- Network layer isolated from UI logic.
 - Adaptive layout using `scaleFactor`
