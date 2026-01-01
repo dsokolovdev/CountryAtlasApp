@@ -156,4 +156,4 @@ https://restcountries.com
 ## ❤️ Author
 
 Created by Dmitry Sokolov  
-© 2025
+© 2026
