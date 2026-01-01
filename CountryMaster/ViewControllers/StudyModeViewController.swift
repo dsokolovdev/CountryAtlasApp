@@ -99,7 +99,7 @@ extension StudyModeViewController {
         view.addSubview(studyModeSegmentedControl)
         
         let b: CGFloat = 20.scaled
-        let w: CGFloat = 200.scaled
+        let w: CGFloat = 250.scaled
         NSLayoutConstraint.activate([
             studyModeSegmentedControl.bottomAnchor.constraint(equalTo: glassView.topAnchor, constant: -b),
             studyModeSegmentedControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),

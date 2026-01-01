@@ -149,6 +149,9 @@ git clone https://github.com/dsokolovdev/CountryMaster.git
 cd CountryMaster
 open CountryMaster.xcodeproj
 ```
+## Data Source
+Country data courtesy of the REST Countries API  
+https://restcountries.com
 
 ## ❤️ Author
 
