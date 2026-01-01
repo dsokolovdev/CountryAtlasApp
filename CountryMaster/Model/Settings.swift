@@ -23,7 +23,10 @@ struct Settings {
         CountryMaster
         Version: \(version) (\(build))
         Made with ❤️  by D.S.
-        © 2025
+        © 2026
+        
+        Country data provided by REST Countries API
+        https://restcountries.com
         """
     }
     

@@ -141,7 +141,7 @@ extension SettingsViewController {
         
         let footerLabel = UILabel()
         footerLabel.text = Settings.settingsFooterText
-        footerLabel.font = .systemFont(ofSize: size.scaled)
+        footerLabel.font = .systemFont(ofSize: size)
         footerLabel.textColor = .secondaryLabel
         footerLabel.textAlignment = .center
         footerLabel.numberOfLines = 0
@@ -164,7 +164,7 @@ extension SettingsViewController {
             x: 0,
             y: 0,
             width: tableView.bounds.width,
-            height: 120.scaled
+            height: 150.scaled
         )
         
         tableView.tableFooterView = footerView
