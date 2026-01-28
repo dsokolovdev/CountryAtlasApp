@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="Images/Hero-image.png" width="800">
+  <img src="Images/preview.png" width="800">
 </p>
 
-# CountryMaster
+# CountryAtlas
 
-CountryMaster is a lightweight iOS app for learning and testing world geography.
+CountryAtlas is a lightweight iOS app for learning and testing world geography.
 Built with UIKit and a fully programmatic UI, the app focuses on clarity, smooth interactions, and a distraction-free learning experience.
 
 <p align="center">
@@ -21,7 +21,7 @@ Built with UIKit and a fully programmatic UI, the app focuses on clarity, smooth
 
 ## Purpose
 
-CountryMaster helps users **learn and test geography in a structured and intuitive way**.
+CountryAtlas helps users **learn and test geography in a structured and intuitive way**.
 
 The app is designed to:
  - simplify memorizing countries, capitals, and flags,
@@ -145,7 +145,7 @@ Global.swift                            // Shared types and helpers (constants, 
 Clone the repository and open the project in Xcode:
 
 ```bash
-git clone https://github.com/dsokolovdev/CountryMaster.git
+git clone https://github.com/dsokolovdev/CountryAtlasApp.git
 cd CountryMaster
 open CountryMaster.xcodeproj
 ```

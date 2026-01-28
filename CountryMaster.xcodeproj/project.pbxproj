@@ -148,7 +148,7 @@
 				DEVELOPMENT_TEAM = B9V2S6X232;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CountryMaster/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CountryMaster;
+				INFOPLIST_KEY_CFBundleDisplayName = CountryAtlas;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -182,7 +182,7 @@
 				DEVELOPMENT_TEAM = B9V2S6X232;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = CountryMaster/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = CountryMaster;
+				INFOPLIST_KEY_CFBundleDisplayName = CountryAtlas;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;

@@ -20,7 +20,7 @@ struct Settings {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"
         
         return """
-        CountryMaster
+        CountryAtlas
         Version: \(version) (\(build))
         Made with ❤️  by D.S.
         © 2026
