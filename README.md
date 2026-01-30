@@ -4,6 +4,12 @@
 
 # CountryAtlas
 
+<p align="center">
+  <a href="https://apps.apple.com/app/countryatlas/id6758236150">
+    <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&amp;releaseDate=1705968000" alt="Download on App Store" style="width: 200px;">
+  </a>
+</p>
+
 CountryAtlas is a lightweight iOS app for learning and testing world geography.
 Built with UIKit and a fully programmatic UI, the app focuses on clarity, smooth interactions, and a distraction-free learning experience.
 
